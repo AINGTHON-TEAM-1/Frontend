@@ -4,28 +4,28 @@ import Link from "next/link";
 const menuItems = [
   { label: "홈", href: "/mainpage_home_giver" },
   { label: "탐색", href: "/Search_giver", active: true },
-  { label: "마이페이지", href: "#" },
+  { label: "마이페이지", href: "/mypage_giver" },
 ];
 
 const jobCards = [
   {
     author: "홍길동",
-    title: "OO대학교 해커톤 운영 팁 급구",
+    title: "OO대학교 동아리 운영진 구인",
     image: "/figma/search-giver/card-1.png",
   },
   {
-    author: "김지튀김",
-    title: "OO소모임 장기 운영 멘토",
+    author: "김지수",
+    title: "OO모임 초기 운영 멘토",
     image: "/figma/search-giver/card-2.png",
   },
   {
-    author: "노규형",
+    author: "박민준",
     title: "OO대-OO대 연합 행사 멘토 모집",
     image: "/figma/search-giver/card-3.png",
   },
   {
-    author: "오인겸",
-    title: "디코 서버 활성화 팁 구합니다",
+    author: "이서연",
+    title: "디스코드 서버 활성화 도와주실 분",
     image: "/figma/search-giver/card-4.png",
   },
   {
@@ -34,18 +34,18 @@ const jobCards = [
     image: "/figma/search-giver/card-5.png",
   },
   {
-    author: "김정민",
+    author: "김도윤",
     title: "OO대 프로젝트 그룹 관리자 모집",
     image: "/figma/search-giver/card-6.png",
   },
   {
-    author: "윤지현",
-    title: "미술 전시회 크루: 멘토 구합니다",
+    author: "오수민",
+    title: "미술 전시회 홍보 멘토 구합니다",
     image: "/figma/search-giver/card-7.png",
   },
   {
-    author: "서상민",
-    title: "OO동아리 인원들이 참여를 안 해요",
+    author: "최상미",
+    title: "OO동아리 인원들이 참여를 잘 안 해요",
     image: "/figma/search-giver/card-8.png",
   },
 ];
@@ -116,8 +116,8 @@ function Header() {
       </nav>
 
       <div className="absolute right-[45px] flex items-center gap-4">
-        <button
-          type="button"
+        <Link
+          href="/mypage_giver"
           className="flex size-9 items-center justify-center"
           aria-label="마이페이지"
         >
@@ -128,7 +128,7 @@ function Header() {
             height={24}
             className="size-6"
           />
-        </button>
+        </Link>
         <Link
           href="/login"
           className="flex size-9 items-center justify-center"
@@ -161,12 +161,12 @@ function SearchControls() {
         <span className="sr-only">검색어</span>
         <input
           className="min-w-0 flex-1 bg-transparent text-[14px] leading-5 font-medium text-[#1e1e1e] outline-none placeholder:text-[#8c8c8c]"
-          placeholder="검색어를 입력하세요."
+          placeholder="검색어를 입력하세요"
         />
         <SearchIcon />
       </label>
 
-      <div className="absolute left-0 top-[52px] z-10 h-[172px] w-[122px] rounded-xl bg-[#f0f0f0] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+      <div className="absolute top-[52px] left-0 z-10 h-[172px] w-[122px] rounded-xl bg-[#f0f0f0] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
         {["제목+내용", "제목", "작성자", "내용"].map((label, index) => (
           <button
             key={label}
@@ -189,13 +189,13 @@ function ModeSwitch() {
       <Link
         href="/Search_giver"
         aria-current="page"
-        className="flex h-8 w-[72px] items-center justify-center rounded-l-full bg-[#333] pl-[18px] pr-[10px] text-[12px] leading-[18px] font-medium text-[#f0f0f0]"
+        className="flex h-8 w-[72px] items-center justify-center rounded-l-full bg-[#333] pr-[10px] pl-[18px] text-[12px] leading-[18px] font-medium text-[#f0f0f0]"
       >
         기버
       </Link>
       <Link
         href="/searchtaker"
-        className="flex h-8 w-[72px] items-center justify-center rounded-r-full border border-[#333] bg-[#f0f0f0] pl-[10px] pr-[18px] text-[12px] leading-[18px] font-medium text-[#333]"
+        className="flex h-8 w-[72px] items-center justify-center rounded-r-full border border-[#333] bg-[#f0f0f0] pr-[18px] pl-[10px] text-[12px] leading-[18px] font-medium text-[#333]"
       >
         테이커
       </Link>

@@ -4,7 +4,7 @@ import Link from "next/link";
 const menuItems = [
   { label: "홈", href: "/mainpage_home_giver", active: true },
   { label: "탐색", href: "/Search_giver" },
-  { label: "마이페이지", href: "#" },
+  { label: "마이페이지", href: "/mypage_giver" },
 ];
 
 function HomeBackground({ nodeId }: { nodeId: string }) {
@@ -58,8 +58,8 @@ export default function MainpageHomeGiverPage() {
           </nav>
 
           <div className="absolute right-[45px] flex items-center gap-4">
-            <button
-              type="button"
+            <Link
+              href="/mypage_giver"
               className="flex size-9 items-center justify-center"
               aria-label="마이페이지"
             >
@@ -70,7 +70,7 @@ export default function MainpageHomeGiverPage() {
                 height={24}
                 className="size-6"
               />
-            </button>
+            </Link>
             <Link
               href="/login"
               className="flex size-9 items-center justify-center"
