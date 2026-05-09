@@ -1,37 +1,14 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { SearchControls } from "@/components/SearchControls";
+import { SiteHeader } from "@/components/SiteHeader";
+import { discoverApi } from "@/lib/api/endpoints";
+import type { DiscoverGiverItem } from "@/lib/api/types";
 
-const menuItems = [
-  { label: "홈", href: "/mainpage_home_giver" },
-  { label: "탐색", href: "/Search_giver", active: true },
-  { label: "마이페이지", href: "#" },
-];
-
-const giverProfiles = [
-  {
-    name: "홍길동",
-    rating: "4.0",
-    stars: 4,
-    description: ["디스코드 OO서버 1.5년 운영 경험", "여러 온라인 서버 멘토 경험 다수"],
-  },
-  { name: "김정민", rating: "5.0" },
-  { name: "윤지현", rating: "5.0" },
-  { name: "김지현", rating: "5.0" },
-  { name: "이태호", rating: "5.0" },
-  { name: "서상민", rating: "5.0" },
-  { name: "노규형", rating: "5.0" },
-  { name: "오인겸", rating: "5.0" },
-  {
-    name: "차준호",
-    rating: "5.0",
-    description: ["디스코드 OO서버 1.5년 운영 경험", "여러 온라인 서버 멘토 경험 다수"],
-  },
-  { name: "김경한", rating: "5.0" },
-  { name: "김와와", rating: "5.0" },
-  { name: "박솨솨", rating: "5.0" },
-];
+const PAGE_SIZE = 12;
 
 function ProfileIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -60,55 +37,6 @@ function StarIcon() {
   );
 }
 
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-      <nav className="mx-auto flex items-center gap-10">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className={`text-[16px] leading-[24px] ${
-              item.active ? "font-bold" : "font-medium"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="absolute right-[45px] flex items-center gap-4">
-        <button
-          type="button"
-          className="flex size-9 items-center justify-center"
-          aria-label="마이페이지"
-        >
-          <Image
-            src="/figma/my-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </button>
-        <Link
-          href="/login"
-          className="flex size-9 items-center justify-center"
-          aria-label="로그아웃"
-        >
-          <Image
-            src="/figma/logout-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-      </div>
-    </header>
-  );
-}
-
 function ModeSwitch() {
   return (
     <div className="flex h-8 overflow-hidden rounded-full" aria-label="탐색 대상 선택">
@@ -129,7 +57,7 @@ function ModeSwitch() {
   );
 }
 
-function MiniTag({ children }: { children: string }) {
+function MiniTag({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-[#333] px-3 py-1 text-[11px] leading-[14px] font-medium whitespace-nowrap text-[#f0f0f0]">
       {children}
@@ -137,11 +65,16 @@ function MiniTag({ children }: { children: string }) {
   );
 }
 
-function Rating({ stars = 5, rating }: { stars?: number; rating: string }) {
+function Rating({ rating }: { rating: string }) {
+  const numeric = Number.parseFloat(rating);
+  const stars = Number.isFinite(numeric) ? Math.round(numeric) : 0;
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center" aria-label={`별점 ${rating}`}>
-        {Array.from({ length: stars }, (_, index) => (
+      <div
+        className="flex items-center"
+        aria-label={`별점 ${rating}`}
+      >
+        {Array.from({ length: Math.max(1, stars) }, (_, index) => (
           <StarIcon key={index} />
         ))}
       </div>
@@ -152,17 +85,18 @@ function Rating({ stars = 5, rating }: { stars?: number; rating: string }) {
   );
 }
 
-function GiverProfileCard({
-  name,
-  rating,
-  stars,
-  description = ["기버의 한 줄 소개를 입력해 주세요", "최대 두 줄까지 들어갑니다"],
-}: {
-  name: string;
-  rating: string;
-  stars?: number;
-  description?: string[];
-}) {
+function GiverProfileCard({ item }: { item: DiscoverGiverItem }) {
+  const tags = item.tags.slice(0, 3);
+  const fallbackTags =
+    tags.length === 0
+      ? [
+          item.freechat_enabled ? "프리챗" : null,
+          item.coffeechat_price > 0
+            ? `커피챗 ${item.coffeechat_price.toLocaleString()}원`
+            : null,
+        ].filter((value): value is string => Boolean(value))
+      : tags;
+
   return (
     <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 pt-[19px] pb-4 shadow-[0_0_8px_rgba(0,0,0,0.25)]">
       <div className="flex items-start gap-4">
@@ -171,79 +105,134 @@ function GiverProfileCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-[14px] leading-5 font-bold whitespace-nowrap text-[#1e1e1e]">
-              {name}
+            <h2 className="truncate text-[14px] leading-5 font-bold text-[#1e1e1e]">
+              {item.nickname}
             </h2>
-            <Rating stars={stars} rating={rating} />
+            <Rating rating={item.rating_avg} />
           </div>
-          <p className="mt-[6px] text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
-            {description.map((line) => (
-              <span key={line} className="block">
-                {line}
-              </span>
-            ))}
+          <p className="mt-[6px] line-clamp-2 text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
+            {item.bio_short ?? "기버의 한 줄 소개를 입력해 주세요"}
           </p>
         </div>
       </div>
       <div className="mt-4 flex items-center gap-2">
-        <MiniTag>#중규모</MiniTag>
-        <MiniTag>#장기간</MiniTag>
-        <MiniTag>#오프라인</MiniTag>
+        {fallbackTags.length === 0 ? (
+          <MiniTag>매칭 {item.match_count}회</MiniTag>
+        ) : (
+          fallbackTags.map((tag) => <MiniTag key={tag}>#{tag}</MiniTag>)
+        )}
       </div>
     </article>
   );
 }
 
-function Pagination() {
-  const pages = Array.from({ length: 10 }, (_, index) => index + 1);
+function Pagination({
+  page,
+  total,
+  onPage,
+}: {
+  page: number;
+  total: number;
+  onPage: (next: number) => void;
+}) {
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
   return (
     <nav className="mt-[102px] flex justify-center" aria-label="페이지">
       <div className="flex items-center justify-center">
-        {["<<", "<"].map((label) => (
+        <button
+          type="button"
+          onClick={() => onPage(1)}
+          disabled={page === 1}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {"<<"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {"<"}
+        </button>
+        {pages.map((p) => (
           <button
-            key={label}
+            key={p}
             type="button"
-            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
-          >
-            {label}
-          </button>
-        ))}
-        {pages.map((page) => (
-          <button
-            key={page}
-            type="button"
+            onClick={() => onPage(p)}
             className={`flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] ${
-              page === 1
-                ? "font-bold text-[#1e1e1e]"
-                : "font-normal text-[#525252]"
+              p === page ? "font-bold text-[#1e1e1e]" : "font-normal text-[#525252]"
             }`}
           >
-            {page}
+            {p}
           </button>
         ))}
-        {[">", ">>"].map((label) => (
-          <button
-            key={label}
-            type="button"
-            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
-          >
-            {label}
-          </button>
-        ))}
+        <button
+          type="button"
+          onClick={() => onPage(Math.min(pageCount, page + 1))}
+          disabled={page === pageCount}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {">"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(pageCount)}
+          disabled={page === pageCount}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {">>"}
+        </button>
       </div>
     </nav>
   );
 }
 
 export default function SearchTakerPage() {
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<DiscoverGiverItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    discoverApi
+      .givers({ page, size: PAGE_SIZE, sort: "latest" }, controller.signal)
+      .then((data) => {
+        setItems(data.items);
+        setTotal(data.total);
+        setError(null);
+      })
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("기버 목록을 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [page]);
+
+  function handlePageChange(next: number) {
+    if (next === page) return;
+    setLoading(true);
+    setPage(next);
+  }
+
   return (
     <main
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="45:394"
     >
+      <SiteHeader role="taker" active="search" />
+
       <section className="mx-auto min-h-[1008px] w-full max-w-[1280px] bg-[#f0f0f0]">
-        <Header />
         <div className="px-20 pt-12 pb-16">
           <div className="flex items-start justify-between">
             <h1 className="text-[24px] leading-[34px] font-extrabold">
@@ -256,13 +245,31 @@ export default function SearchTakerPage() {
 
           <SearchControls placeholder="검색어를 입력하세요." />
 
-          <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-10">
-            {giverProfiles.map((profile) => (
-              <GiverProfileCard key={profile.name} {...profile} />
-            ))}
-          </div>
-
-          <Pagination />
+          {loading ? (
+            <div className="mt-12 flex h-[300px] items-center justify-center text-[14px] font-medium text-[#525252]">
+              기버 목록을 불러오는 중…
+            </div>
+          ) : error ? (
+            <div className="mt-12 flex flex-col items-center gap-2 rounded-[12px] bg-[#f0f0f0] p-8 text-center shadow-[0_0_8px_rgba(0,0,0,0.18)]">
+              <p className="text-[14px] font-medium text-[#1e1e1e]">{error}</p>
+              <p className="text-[12px] font-medium text-[#525252]">
+                백엔드 서버 연결 상태를 확인해 주세요.
+              </p>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mt-12 flex h-[200px] items-center justify-center text-[14px] font-medium text-[#525252]">
+              아직 등록된 기버가 없어요.
+            </div>
+          ) : (
+            <>
+              <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-10">
+                {items.map((item) => (
+                  <GiverProfileCard key={item.id} item={item} />
+                ))}
+              </div>
+              <Pagination page={page} total={total} onPage={handlePageChange} />
+            </>
+          )}
         </div>
       </section>
     </main>

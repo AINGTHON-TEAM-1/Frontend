@@ -1,11 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
-
-const menuItems = [
-  { label: "홈", href: "/mainpage_home_taker" },
-  { label: "탐색", href: "/searchtaker" },
-  { label: "마이페이지", href: "/mypagetaker", active: true },
-];
+import { SiteHeader } from "./SiteHeader";
 
 const dashboardItems = [
   { label: "요청한 협업", value: "000건+" },
@@ -13,66 +7,16 @@ const dashboardItems = [
   { label: "완료한 솔루션", value: "000건+" },
 ];
 
-function Header() {
-  return (
-    <header className="relative flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-      <nav className="mx-auto flex items-center gap-10">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            aria-current={item.active ? "page" : undefined}
-            className={`text-[16px] leading-[24px] ${
-              item.active ? "font-bold" : "font-medium"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="absolute right-[45px] flex items-center gap-4">
-        <Link
-          href="/mypagetaker"
-          className="flex size-9 items-center justify-center"
-          aria-label="마이페이지"
-        >
-          <Image
-            src="/figma/my-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-        <Link
-          href="/login"
-          className="flex size-9 items-center justify-center"
-          aria-label="로그아웃"
-        >
-          <Image
-            src="/figma/logout-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-      </div>
-    </header>
-  );
-}
-
 export default function MypageTakerPage() {
   return (
     <main
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="71:1098"
     >
-      <section className="mx-auto min-h-[808px] w-full max-w-[1280px] bg-[#f0f0f0]">
-        <Header />
+      <SiteHeader role="taker" active="mypage" />
 
-        <div className="mx-auto w-full max-w-[835px] pt-[66px]">
+      <section className="mx-auto min-h-[808px] w-full max-w-[1280px] bg-[#f0f0f0]">
+        <div className="w-full px-[45px] pt-[66px]">
           <h1 className="text-[24px] leading-[34px] font-extrabold">
             나의 프로필
           </h1>

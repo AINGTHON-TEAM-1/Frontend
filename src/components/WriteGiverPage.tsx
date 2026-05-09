@@ -1,26 +1,25 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const menuItems = [
-  { label: "홈", href: "/mainpage_home_giver" },
-  { label: "탐색", href: "/Search_giver" },
-  { label: "마이페이지", href: "/mypage_giver" },
-];
+import { SiteHeader } from "@/components/SiteHeader";
+import { ApiError } from "@/lib/api/client";
+import { aiApi, giversApi } from "@/lib/api/endpoints";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 const communitySizeOptions = [
-  { value: "small", label: "소규모 (16명 이하)" },
-  { value: "medium", label: "중규모 (16~00명)" },
-  { value: "large", label: "대규모 (000명 이상)" },
+  { value: "small", label: "소규모 (16명 이하)", maxMembers: 16 },
+  { value: "medium", label: "중규모 (16~00명)", maxMembers: 100 },
+  { value: "large", label: "대규모 (000명 이상)", maxMembers: 1000 },
 ] as const;
 type CommunitySize = (typeof communitySizeOptions)[number]["value"];
 
 const weekDays = ["월", "화", "수", "목", "금", "토", "일"] as const;
 type WeekDay = (typeof weekDays)[number];
 
-const aiSuggestedTags = [
+const DEFAULT_SUGGESTED_TAGS = [
   "리더십",
   "팀빌딩",
   "기획",
@@ -28,6 +27,19 @@ const aiSuggestedTags = [
   "커뮤니티 활성화",
   "마케팅",
 ];
+
+function computeDurationMonths(start: string, end: string): number | null {
+  if (!start || !end) return null;
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return null;
+  }
+  const months =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+    (endDate.getMonth() - startDate.getMonth());
+  return Math.max(0, months);
+}
 
 const regionOptions = [
   "서울 전체",
@@ -92,53 +104,6 @@ function CheckIcon({ checked }: { checked: boolean }) {
         </svg>
       )}
     </span>
-  );
-}
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-      <nav className="mx-auto flex items-center gap-10">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="text-[16px] leading-[24px] font-medium"
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="absolute right-[45px] flex items-center gap-4">
-        <Link
-          href="/mypage_giver"
-          className="flex size-9 items-center justify-center"
-          aria-label="마이페이지"
-        >
-          <Image
-            src="/figma/my-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-        <Link
-          href="/login"
-          className="flex size-9 items-center justify-center"
-          aria-label="로그아웃"
-        >
-          <Image
-            src="/figma/logout-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-      </div>
-    </header>
   );
 }
 
@@ -230,42 +195,30 @@ function CommunitySizeDropdown({
 }
 
 function RegionModal({
-  open,
   onClose,
   selected,
   onSelect,
 }: {
-  open: boolean;
   onClose: () => void;
   selected: string[];
   onSelect: (regions: string[]) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [draft, setDraft] = useState<string[]>(selected);
+  const [draft, setDraft] = useState<string[]>(() => selected);
 
   useEffect(() => {
-    if (open) {
-      setDraft(selected);
-      setQuery("");
-    }
-  }, [open, selected]);
-
-  useEffect(() => {
-    if (!open) return;
     function handleKey(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
     }
     document.addEventListener("keydown", handleKey);
     return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
+  }, [onClose]);
 
   const filtered = useMemo(() => {
     const trimmed = query.trim();
     if (!trimmed) return regionOptions;
     return regionOptions.filter((region) => region.includes(trimmed));
   }, [query]);
-
-  if (!open) return null;
 
   function toggle(region: string) {
     setDraft((prev) =>
@@ -570,6 +523,9 @@ function TagChip({
 }
 
 export default function WriteGiverPage() {
+  const router = useRouter();
+  const { userId } = useAuth();
+
   const [communitySize, setCommunitySize] = useState<CommunitySize | null>(null);
 
   const [online, setOnline] = useState(false);
@@ -594,12 +550,23 @@ export default function WriteGiverPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagDraft, setTagDraft] = useState("");
 
+  const [suggestedTags, setSuggestedTags] = useState<string[]>(
+    DEFAULT_SUGGESTED_TAGS,
+  );
+  const [aiNote, setAiNote] = useState<string>(
+    "AI 추천 받기 버튼을 누르면 자기소개를 분석해 드려요.",
+  );
+  const [aiLoading, setAiLoading] = useState(false);
+
   const [selectedServices, setSelectedServices] = useState<ServiceId[]>([]);
   const [servicePlans, setServicePlans] = useState<Record<ServiceId, string>>({
     free: "",
     coffee: "",
     meal: "",
   });
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   function toggleOffline(next: boolean) {
     setOffline(next);
@@ -630,7 +597,110 @@ export default function WriteGiverPage() {
     );
   }
 
-  const remainingSuggestions = aiSuggestedTags.filter(
+  async function handleAiSuggest() {
+    const text = introduction.trim();
+    if (text.length < 10) {
+      setAiNote("자기소개를 10자 이상 작성한 뒤 다시 시도해 주세요.");
+      return;
+    }
+    if (text.length > 1000) {
+      setAiNote("자기소개는 1000자 이내로 줄여 주세요.");
+      return;
+    }
+    setAiLoading(true);
+    setAiNote("AI가 자기소개를 분석하고 있어요…");
+    try {
+      const res = await aiApi.suggestTags({ text });
+      if (res.success && res.suggested_tags.length > 0) {
+        setSuggestedTags(res.suggested_tags);
+      } else if (res.suggested_tags.length > 0) {
+        setSuggestedTags(res.suggested_tags);
+      }
+      setAiNote(res.note);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setAiNote("로그인이 필요해요. 로그인 화면에서 다시 들어와 주세요.");
+      } else if (err instanceof Error) {
+        setAiNote(err.message);
+      } else {
+        setAiNote("태그 추천에 실패했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitError(null);
+
+    if (!userId) {
+      setSubmitError("로그인이 필요합니다.");
+      return;
+    }
+    if (!introduction.trim()) {
+      setSubmitError("자기소개를 입력해 주세요.");
+      return;
+    }
+    if (selectedServices.length === 0) {
+      setSubmitError("제공할 서비스를 1개 이상 선택해 주세요.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const bioLong = introduction.trim().slice(0, 500);
+      const bioShort = bioLong.length > 50 ? bioLong.slice(0, 50) : bioLong;
+
+      await giversApi.createProfile({
+        bio_short: bioShort || null,
+        bio_long: bioLong || null,
+        freechat_enabled: selectedServices.includes("free"),
+        coffeechat_enabled: selectedServices.includes("coffee"),
+        mealchat_enabled: selectedServices.includes("meal"),
+      });
+
+      const sizeOption = communitySizeOptions.find(
+        (option) => option.value === communitySize,
+      );
+      try {
+        await giversApi.createExperience({
+          community_name: null,
+          categories: [],
+          duration_months: computeDurationMonths(startDate, endDate),
+          max_member_count: sizeOption?.maxMembers ?? null,
+          proof_url: null,
+          achievement: bioLong || null,
+        });
+      } catch (expErr) {
+        if (expErr instanceof ApiError && expErr.status === 409) {
+          // 이미 등록된 경험은 무시 (MVP는 1개만 허용)
+        } else {
+          throw expErr;
+        }
+      }
+
+      router.push("/mypage_giver");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          setSubmitError(
+            "이미 기버 프로필이 등록되어 있어요. 마이페이지에서 수정해 주세요.",
+          );
+        } else {
+          setSubmitError(err.detail);
+        }
+      } else if (err instanceof Error) {
+        setSubmitError(err.message);
+      } else {
+        setSubmitError("등록에 실패했습니다. 다시 시도해 주세요.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const remainingSuggestions = suggestedTags.filter(
     (tag) => !tags.includes(tag),
   );
 
@@ -639,8 +709,9 @@ export default function WriteGiverPage() {
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="write-giver-root"
     >
+      <SiteHeader role="giver" />
+
       <section className="mx-auto min-h-screen w-full max-w-[1280px] bg-[#f0f0f0]">
-        <Header />
 
         <div className="px-20 pt-12 pb-20">
           <div className="mx-auto w-full max-w-[760px]">
@@ -651,7 +722,7 @@ export default function WriteGiverPage() {
               나의 활동 가능 조건과 제공할 서비스를 작성해 테이커에게 소개해 보세요.
             </p>
 
-            <form className="mt-12 flex flex-col gap-10">
+            <form className="mt-12 flex flex-col gap-10" onSubmit={handleSubmit}>
               <div>
                 <SectionLabel>담당하고 싶은 커뮤니티 규모는?</SectionLabel>
                 <p className="mt-2 text-[14px] leading-[20px] font-medium text-[#525252]">
@@ -772,14 +843,22 @@ export default function WriteGiverPage() {
                 />
 
                 <div className="mt-5 rounded-[12px] bg-[#f0f0f0] p-4 shadow-[inset_0_0_4px_rgba(0,0,0,0.12)]">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <span className="text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
                       AI 추천 태그
                     </span>
-                    <span className="text-[12px] leading-[18px] font-medium text-[#525252]">
-                      자기소개 내용을 바탕으로 추천드려요
-                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAiSuggest}
+                      disabled={aiLoading}
+                      className="h-8 rounded-full bg-[#1e1e1e] px-4 text-[12px] leading-[18px] font-bold text-[#f0f0f0] disabled:opacity-50"
+                    >
+                      {aiLoading ? "추천 중…" : "AI 추천 받기"}
+                    </button>
                   </div>
+                  <p className="mt-2 text-[12px] leading-[18px] font-medium text-[#525252]">
+                    {aiNote}
+                  </p>
 
                   <div className="mt-3 flex flex-wrap gap-2">
                     {remainingSuggestions.length === 0 ? (
@@ -899,6 +978,12 @@ export default function WriteGiverPage() {
                 </ul>
               </div>
 
+              {submitError && (
+                <p className="rounded-[8px] bg-[#f0f0f0] px-4 py-3 text-[13px] leading-[20px] font-medium text-[#a23a3a] shadow-[inset_0_0_4px_rgba(162,58,58,0.3)]">
+                  {submitError}
+                </p>
+              )}
+
               <div className="mt-4 flex justify-end gap-3">
                 <Link
                   href="/mainpage_home_giver"
@@ -908,9 +993,10 @@ export default function WriteGiverPage() {
                 </Link>
                 <button
                   type="submit"
-                  className="flex h-12 items-center justify-center rounded-full bg-[#1e1e1e] px-8 text-[15px] leading-[22px] font-bold text-[#f0f0f0]"
+                  disabled={submitting}
+                  className="flex h-12 items-center justify-center rounded-full bg-[#1e1e1e] px-8 text-[15px] leading-[22px] font-bold text-[#f0f0f0] disabled:opacity-60"
                 >
-                  글 등록하기
+                  {submitting ? "등록 중…" : "글 등록하기"}
                 </button>
               </div>
             </form>
@@ -918,12 +1004,13 @@ export default function WriteGiverPage() {
         </div>
       </section>
 
-      <RegionModal
-        open={regionModalOpen}
-        onClose={() => setRegionModalOpen(false)}
-        selected={regions}
-        onSelect={setRegions}
-      />
+      {regionModalOpen && (
+        <RegionModal
+          onClose={() => setRegionModalOpen(false)}
+          selected={regions}
+          onSelect={setRegions}
+        />
+      )}
     </main>
   );
 }

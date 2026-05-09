@@ -1,56 +1,14 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import { SearchControls } from "@/components/SearchControls";
+import { SiteHeader } from "@/components/SiteHeader";
+import { discoverApi } from "@/lib/api/endpoints";
+import type { DiscoverPostItem } from "@/lib/api/types";
 
-const menuItems = [
-  { label: "홈", href: "/mainpage_home_giver" },
-  { label: "탐색", href: "/Search_giver", active: true },
-  { label: "마이페이지", href: "/mypage_giver" },
-];
-
-const jobCards = [
-  {
-    author: "홍길동",
-    title: "OO대학교 동아리 운영진 구인",
-    image: "/figma/search-giver/card-1.png",
-  },
-  {
-    author: "김지수",
-    title: "OO모임 초기 운영 멘토",
-    image: "/figma/search-giver/card-2.png",
-  },
-  {
-    author: "박민준",
-    title: "OO대-OO대 연합 행사 멘토 모집",
-    image: "/figma/search-giver/card-3.png",
-  },
-  {
-    author: "이서연",
-    title: "디스코드 서버 활성화 도와주실 분",
-    image: "/figma/search-giver/card-4.png",
-  },
-  {
-    author: "김경한",
-    title: "스터디 그룹 참여율 향상시키기",
-    image: "/figma/search-giver/card-5.png",
-  },
-  {
-    author: "김도윤",
-    title: "OO대 프로젝트 그룹 관리자 모집",
-    image: "/figma/search-giver/card-6.png",
-  },
-  {
-    author: "오수민",
-    title: "미술 전시회 홍보 멘토 구합니다",
-    image: "/figma/search-giver/card-7.png",
-  },
-  {
-    author: "최상미",
-    title: "OO동아리 인원들이 참여를 잘 안 해요",
-    image: "/figma/search-giver/card-8.png",
-  },
-];
+const PAGE_SIZE = 12;
 
 function ProfileIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -65,55 +23,6 @@ function ProfileIcon({ className = "size-4" }: { className?: string }) {
         fill="#1e1e1e"
       />
     </svg>
-  );
-}
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-20 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-      <nav className="mx-auto flex items-center gap-10">
-        {menuItems.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className={`text-[16px] leading-[24px] ${
-              item.active ? "font-bold" : "font-medium"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
-
-      <div className="absolute right-[45px] flex items-center gap-4">
-        <Link
-          href="/mypage_giver"
-          className="flex size-9 items-center justify-center"
-          aria-label="마이페이지"
-        >
-          <Image
-            src="/figma/my-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-        <Link
-          href="/login"
-          className="flex size-9 items-center justify-center"
-          aria-label="로그아웃"
-        >
-          <Image
-            src="/figma/logout-icon.svg"
-            alt=""
-            width={24}
-            height={24}
-            className="size-6"
-          />
-        </Link>
-      </div>
-    </header>
   );
 }
 
@@ -137,7 +46,7 @@ function ModeSwitch() {
   );
 }
 
-function MiniTag({ children }: { children: string }) {
+function MiniTag({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-[#333] px-3 py-1 text-[11px] leading-[14px] font-medium whitespace-nowrap text-[#f0f0f0]">
       {children}
@@ -145,89 +54,162 @@ function MiniTag({ children }: { children: string }) {
   );
 }
 
-function JobCard({
-  author,
-  title,
-  image,
-}: {
-  author: string;
-  title: string;
-  image: string;
-}) {
+function formatBudget(item: DiscoverPostItem): string {
+  if (item.budget_min == null && item.budget_max == null) return "예산 미정";
+  if (item.budget_min != null && item.budget_max != null) {
+    if (item.budget_min === 0 && item.budget_max === 0) return "무료 매칭";
+    return `${item.budget_min.toLocaleString()}~${item.budget_max.toLocaleString()}원`;
+  }
+  if (item.budget_max != null) return `~${item.budget_max.toLocaleString()}원`;
+  return `${item.budget_min!.toLocaleString()}원~`;
+}
+
+function JobCard({ item }: { item: DiscoverPostItem }) {
   return (
-    <article className="h-[247px] overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
+    <article className="flex h-[247px] flex-col overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
       <div className="flex h-10 items-center gap-1 px-4 pt-3 pb-2.5 shadow-[0_0_4px_rgba(0,0,0,0.25)]">
         <ProfileIcon />
         <span className="text-[12px] leading-[18px] font-medium text-[#1e1e1e]">
-          {author}
+          {item.author_nickname}
         </span>
       </div>
-      <div className="relative h-[119px] w-full">
-        <Image src={image} alt="" fill sizes="265px" className="object-cover" />
+      <div className="flex-1 px-4 pt-3 pb-2 text-[12px] leading-[18px] font-medium text-[#525252]">
+        <p className="line-clamp-4">{item.body_preview}</p>
       </div>
-      <div className="h-[88px] px-4 pt-4 pb-[18px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-        <h2 className="w-[221px] text-[16px] leading-6 font-bold text-[#1e1e1e]">
-          {title}
+      <div className="px-4 pt-2 pb-[18px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+        <h2 className="line-clamp-2 text-[16px] leading-6 font-bold text-[#1e1e1e]">
+          {item.title}
         </h2>
-        <div className="mt-2 flex gap-2">
-          <MiniTag>~2026.00.00</MiniTag>
-          <MiniTag>000명 모집</MiniTag>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <MiniTag>{formatBudget(item)}</MiniTag>
+          <MiniTag>신청 {item.application_count}건</MiniTag>
+          {item.preferred_format && (
+            <MiniTag>{formatLabel(item.preferred_format)}</MiniTag>
+          )}
         </div>
       </div>
     </article>
   );
 }
 
-function Pagination() {
-  const pages = Array.from({ length: 10 }, (_, index) => index + 1);
+function formatLabel(format: NonNullable<DiscoverPostItem["preferred_format"]>) {
+  switch (format) {
+    case "freechat":
+      return "프리챗";
+    case "coffeechat":
+      return "커피챗";
+    case "mealchat":
+      return "밀챗";
+  }
+}
+
+function Pagination({
+  page,
+  total,
+  onPage,
+}: {
+  page: number;
+  total: number;
+  onPage: (next: number) => void;
+}) {
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
   return (
     <nav className="mt-[54px] flex justify-center" aria-label="페이지">
       <div className="flex items-center justify-center">
-        {["<<", "<"].map((label) => (
+        <button
+          type="button"
+          onClick={() => onPage(1)}
+          disabled={page === 1}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {"<<"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(Math.max(1, page - 1))}
+          disabled={page === 1}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {"<"}
+        </button>
+        {pages.map((p) => (
           <button
-            key={label}
+            key={p}
             type="button"
-            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
-          >
-            {label}
-          </button>
-        ))}
-        {pages.map((page) => (
-          <button
-            key={page}
-            type="button"
+            onClick={() => onPage(p)}
             className={`flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] ${
-              page === 1
-                ? "font-bold text-[#1e1e1e]"
-                : "font-normal text-[#525252]"
+              p === page ? "font-bold text-[#1e1e1e]" : "font-normal text-[#525252]"
             }`}
           >
-            {page}
+            {p}
           </button>
         ))}
-        {[">", ">>"].map((label) => (
-          <button
-            key={label}
-            type="button"
-            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
-          >
-            {label}
-          </button>
-        ))}
+        <button
+          type="button"
+          onClick={() => onPage(Math.min(pageCount, page + 1))}
+          disabled={page === pageCount}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {">"}
+        </button>
+        <button
+          type="button"
+          onClick={() => onPage(pageCount)}
+          disabled={page === pageCount}
+          className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252] disabled:opacity-40"
+        >
+          {">>"}
+        </button>
       </div>
     </nav>
   );
 }
 
 export default function SearchGiverPage() {
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<DiscoverPostItem[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    discoverApi
+      .posts({ page, size: PAGE_SIZE, sort: "latest" }, controller.signal)
+      .then((data) => {
+        setItems(data.items);
+        setTotal(data.total);
+        setError(null);
+      })
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("구인글을 불러오지 못했습니다.");
+        }
+      })
+      .finally(() => setLoading(false));
+
+    return () => controller.abort();
+  }, [page]);
+
+  function handlePageChange(next: number) {
+    if (next === page) return;
+    setLoading(true);
+    setPage(next);
+  }
+
   return (
     <main
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="36:665"
     >
+      <SiteHeader role="giver" active="search" />
+
       <section className="mx-auto min-h-[1008px] w-full max-w-[1280px] bg-[#f0f0f0]">
-        <Header />
         <div className="px-20 pt-12 pb-16">
           <div className="flex items-start justify-between">
             <h1 className="text-[24px] leading-[34px] font-extrabold">
@@ -240,13 +222,31 @@ export default function SearchGiverPage() {
 
           <SearchControls />
 
-          <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-8">
-            {jobCards.map((card) => (
-              <JobCard key={`${card.author}-${card.title}`} {...card} />
-            ))}
-          </div>
-
-          <Pagination />
+          {loading ? (
+            <div className="mt-12 flex h-[300px] items-center justify-center text-[14px] font-medium text-[#525252]">
+              구인글을 불러오는 중…
+            </div>
+          ) : error ? (
+            <div className="mt-12 flex flex-col items-center gap-2 rounded-[12px] bg-[#f0f0f0] p-8 text-center shadow-[0_0_8px_rgba(0,0,0,0.18)]">
+              <p className="text-[14px] font-medium text-[#1e1e1e]">{error}</p>
+              <p className="text-[12px] font-medium text-[#525252]">
+                백엔드 서버 연결 상태를 확인해 주세요.
+              </p>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="mt-12 flex h-[200px] items-center justify-center text-[14px] font-medium text-[#525252]">
+              아직 등록된 구인글이 없어요.
+            </div>
+          ) : (
+            <>
+              <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-8">
+                {items.map((item) => (
+                  <JobCard key={item.id} item={item} />
+                ))}
+              </div>
+              <Pagination page={page} total={total} onPage={handlePageChange} />
+            </>
+          )}
         </div>
       </section>
     </main>

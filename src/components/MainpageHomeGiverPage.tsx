@@ -1,11 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-
-const menuItems = [
-  { label: "홈", href: "/mainpage_home_giver", active: true },
-  { label: "탐색", href: "/Search_giver" },
-  { label: "마이페이지", href: "/mypage_giver" },
-];
+import { SiteHeader } from "./SiteHeader";
 
 const giverBenefits = [
   {
@@ -75,53 +70,10 @@ export default function MainpageHomeGiverPage() {
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="71:467"
     >
-      <section className="relative mx-auto min-h-screen w-full max-w-[1280px] overflow-hidden bg-[#f0f0f0]">
+      <SiteHeader role="giver" active="home" />
+
+      <section className="relative mx-auto min-h-[calc(100vh-80px)] w-full max-w-[1280px] overflow-hidden bg-[#f0f0f0]">
         <HomeBackground nodeId="71:467" />
-
-        <header className="relative z-10 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-          <nav className="mx-auto flex items-center gap-10">
-            {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`text-[16px] leading-[24px] ${
-                  item.active ? "font-bold" : "font-medium"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="absolute right-[45px] flex items-center gap-4">
-            <Link
-              href="/mypage_giver"
-              className="flex size-9 items-center justify-center"
-              aria-label="마이페이지"
-            >
-              <Image
-                src="/figma/my-icon.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
-            </Link>
-            <Link
-              href="/login"
-              className="flex size-9 items-center justify-center"
-              aria-label="로그아웃"
-            >
-              <Image
-                src="/figma/logout-icon.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
-            </Link>
-          </div>
-        </header>
 
         <div className="relative z-[1] flex min-h-[720px] flex-col items-center px-5 pt-[177px] text-center">
           <h1 className="text-[48px] leading-[64px] font-extrabold tracking-normal">
