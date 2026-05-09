@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { SearchControls } from "@/components/SearchControls";
+
 const menuItems = [
   { label: "홈", href: "/mainpage_home_giver" },
   { label: "탐색", href: "/Search_giver", active: true },
@@ -58,38 +60,6 @@ function StarIcon() {
   );
 }
 
-function ChevronDown() {
-  return (
-    <svg aria-hidden="true" className="size-3" viewBox="0 0 12 12" fill="none">
-      <path
-        d="M2 4.25 6 8l4-3.75"
-        stroke="#979797"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function SearchIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="size-5"
-      viewBox="0 0 20 20"
-      fill="none"
-    >
-      <path
-        d="m14.2 14.2 3 3M8.8 15.4a6.6 6.6 0 1 1 0-13.2 6.6 6.6 0 0 1 0 13.2Z"
-        stroke="#8c8c8c"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function Header() {
   return (
     <header className="sticky top-0 z-20 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
@@ -136,42 +106,6 @@ function Header() {
         </Link>
       </div>
     </header>
-  );
-}
-
-function SearchControls() {
-  return (
-    <div className="relative mt-8 flex h-11 w-full items-center gap-4">
-      <button
-        type="button"
-        className="flex h-11 w-[122px] shrink-0 items-center justify-between rounded-full border border-[#b2b2b2] px-4 text-[14px] leading-5 font-medium text-[#979797]"
-      >
-        제목 + 내용
-        <ChevronDown />
-      </button>
-      <label className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-[#b2b2b2] px-4 py-2.5">
-        <span className="sr-only">검색어</span>
-        <input
-          className="min-w-0 flex-1 bg-transparent text-[14px] leading-5 font-medium text-[#1e1e1e] outline-none placeholder:text-[#8c8c8c]"
-          placeholder="검색어를 입력하세요."
-        />
-        <SearchIcon />
-      </label>
-
-      <div className="absolute left-0 top-[52px] z-10 h-[172px] w-[122px] rounded-xl bg-[#f0f0f0] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-        {["제목+내용", "제목", "작성자", "내용"].map((label, index) => (
-          <button
-            key={label}
-            type="button"
-            className={`flex h-10 w-full items-center px-4 text-left text-[16px] leading-6 font-medium text-[#1e1e1e] ${
-              index === 0 ? "pt-1" : ""
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -320,7 +254,7 @@ export default function SearchTakerPage() {
             </div>
           </div>
 
-          <SearchControls />
+          <SearchControls placeholder="검색어를 입력하세요." />
 
           <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-10">
             {giverProfiles.map((profile) => (
