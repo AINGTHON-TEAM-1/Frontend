@@ -120,7 +120,7 @@ export default function OnboardingTakerQuestion02Page() {
                       width={120}
                       height={120}
                       className="size-[120px] object-cover"
-                      priority
+                      preload
                     />
                     <span className="text-center text-[18px] leading-[28px] font-medium">
                       {option.label}

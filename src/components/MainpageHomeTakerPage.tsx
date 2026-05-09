@@ -52,7 +52,7 @@ function HomeBackground() {
           fill
           sizes="1288px"
           className="object-cover opacity-20"
-          priority
+          preload
         />
       </div>
       <div

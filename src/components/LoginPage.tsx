@@ -141,7 +141,7 @@ export function LoginPage() {
           width={96}
           height={96}
           className="size-[96px] shrink-0"
-          priority
+          preload
         />
 
         <h1 className="mt-[18px] text-center text-[20px] leading-[28px] font-extrabold tracking-normal">

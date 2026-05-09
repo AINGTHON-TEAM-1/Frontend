@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SearchControls } from "@/components/SearchControls";
 import { SiteHeader } from "@/components/SiteHeader";
-import { discoverApi } from "@/lib/api/endpoints";
-import type { DiscoverPostItem } from "@/lib/api/types";
+import { ApiError } from "@/lib/api/client";
+import { discoverApi, matchesApi } from "@/lib/api/endpoints";
+import type { DiscoverPostItem, Format } from "@/lib/api/types";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 const PAGE_SIZE = 12;
 
@@ -66,16 +69,19 @@ function formatBudget(item: DiscoverPostItem): string {
 
 function JobCard({
   item,
+  index,
   onSelect,
 }: {
   item: DiscoverPostItem;
+  index: number;
   onSelect: (item: DiscoverPostItem) => void;
 }) {
   return (
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="block w-full text-left transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
+      style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+      className="block w-full animate-card-rise text-left transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
     >
       <article className="flex h-[247px] flex-col overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
         <div className="flex h-10 items-center gap-1 px-4 pt-3 pb-2.5 shadow-[0_0_4px_rgba(0,0,0,0.25)]">
@@ -142,9 +148,15 @@ function StatBlock({ label, value }: { label: string; value: string }) {
 function PostDetailModal({
   item,
   onClose,
+  onApply,
+  applying,
+  applyError,
 }: {
   item: DiscoverPostItem;
   onClose: () => void;
+  onApply: (format: Format) => void;
+  applying: boolean;
+  applyError: string | null;
 }) {
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -154,16 +166,18 @@ function PostDetailModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
+  const defaultFormat: Format = item.preferred_format ?? "freechat";
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="구인글 상세"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[88vh] w-full max-w-[640px] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
+        className="flex max-h-[88vh] w-full max-w-[640px] animate-modal-pop flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative bg-gradient-to-br from-[#1e1e1e] to-[#2a2a2a] px-8 pt-7 pb-8 text-[#f0f0f0]">
@@ -254,19 +268,32 @@ function PostDetailModal({
           )}
         </div>
 
+        {applyError && (
+          <p className="border-t border-[#e8e8e8] bg-[#fff5f5] px-8 py-3 text-[13px] leading-[20px] font-medium text-[#a23a3a]">
+            {applyError}
+          </p>
+        )}
+
         <div className="flex gap-3 border-t border-[#e8e8e8] bg-[#fafafa] px-8 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="h-11 flex-1 rounded-full border border-[#1e1e1e] bg-transparent text-[14px] leading-[44px] font-bold text-[#1e1e1e] transition hover:bg-[#1e1e1e] hover:text-[#f0f0f0]"
+            disabled={applying}
+            className="h-11 flex-1 rounded-full border border-[#1e1e1e] bg-transparent text-[14px] leading-[44px] font-bold text-[#1e1e1e] transition hover:bg-[#1e1e1e] hover:text-[#f0f0f0] disabled:opacity-60"
           >
             닫기
           </button>
           <button
             type="button"
-            className="h-11 flex-[2] rounded-full bg-[#1e1e1e] text-[14px] leading-[44px] font-bold text-[#f0f0f0] shadow-[0_4px_16px_rgba(30,30,30,0.3)] transition hover:bg-[#333]"
+            onClick={() => onApply(defaultFormat)}
+            disabled={applying || item.status !== "open"}
+            className="h-11 flex-[2] rounded-full bg-[#1e1e1e] text-[14px] leading-[44px] font-bold text-[#f0f0f0] shadow-[0_4px_16px_rgba(30,30,30,0.3)] transition hover:bg-[#333] disabled:opacity-60"
           >
-            지원하기
+            {applying
+              ? "신청 중…"
+              : item.status === "open"
+                ? "지원하기"
+                : "모집 마감"}
           </button>
         </div>
       </div>
@@ -350,12 +377,16 @@ function Pagination({
 }
 
 export default function SearchGiverPage() {
+  const { userId } = useAuth();
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<DiscoverPostItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<DiscoverPostItem | null>(null);
+  const [applying, setApplying] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -383,6 +414,53 @@ export default function SearchGiverPage() {
     if (next === page) return;
     setLoading(true);
     setPage(next);
+  }
+
+  function openDetail(item: DiscoverPostItem) {
+    setApplyError(null);
+    setSelected(item);
+  }
+
+  function closeDetail() {
+    if (applying) return;
+    setSelected(null);
+    setApplyError(null);
+  }
+
+  async function handleApply(format: Format) {
+    if (!selected) return;
+    if (!userId) {
+      setApplyError("로그인이 필요해요. 다시 로그인 후 신청해 주세요.");
+      return;
+    }
+    setApplying(true);
+    setApplyError(null);
+    try {
+      await matchesApi.create({
+        target_type: "taker_post",
+        target_id: selected.id,
+        format,
+        message: "지원합니다.",
+      });
+      setSelected(null);
+      setSuccessOpen(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 409) {
+          setApplyError("이미 진행 중인 신청이 있어요. 마이페이지에서 확인해 주세요.");
+        } else if (err.status === 401) {
+          setApplyError("로그인이 필요해요. 다시 로그인 후 시도해 주세요.");
+        } else {
+          setApplyError(err.detail);
+        }
+      } else if (err instanceof Error) {
+        setApplyError(err.message);
+      } else {
+        setApplyError("신청에 실패했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } finally {
+      setApplying(false);
+    }
   }
 
   return (
@@ -423,8 +501,13 @@ export default function SearchGiverPage() {
           ) : (
             <>
               <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-8">
-                {items.map((item) => (
-                  <JobCard key={item.id} item={item} onSelect={setSelected} />
+                {items.map((item, index) => (
+                  <JobCard
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onSelect={openDetail}
+                  />
                 ))}
               </div>
               <Pagination page={page} total={total} onPage={handlePageChange} />
@@ -434,7 +517,17 @@ export default function SearchGiverPage() {
       </section>
 
       {selected && (
-        <PostDetailModal item={selected} onClose={() => setSelected(null)} />
+        <PostDetailModal
+          item={selected}
+          onClose={closeDetail}
+          onApply={handleApply}
+          applying={applying}
+          applyError={applyError}
+        />
+      )}
+
+      {successOpen && (
+        <MatchSuccessModal onClose={() => setSuccessOpen(false)} />
       )}
     </main>
   );

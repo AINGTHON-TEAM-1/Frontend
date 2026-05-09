@@ -72,7 +72,7 @@ export default function OnboardingTakerQuestionFinishPage() {
               width={300}
               height={300}
               className="size-[300px] object-cover"
-              priority
+              preload
             />
             <Image
               src="/figma/chat-bubble.png"
@@ -80,7 +80,7 @@ export default function OnboardingTakerQuestionFinishPage() {
               width={100}
               height={100}
               className="mt-[14px] size-[100px] object-cover"
-              priority
+              preload
             />
           </div>
 
