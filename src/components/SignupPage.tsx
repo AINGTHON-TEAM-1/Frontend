@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 
 const ageOptions = [
@@ -31,29 +31,38 @@ function RequiredMessage({ children }: { children: ReactNode }) {
   );
 }
 
-function segmentedClass(isSelected: boolean, side: "left" | "right") {
+function segmentedClass(
+  isSelected: boolean,
+  side: "left" | "right",
+  hasError: boolean,
+) {
   const radius = side === "left" ? "rounded-l-full" : "rounded-r-full";
-  const spacing = side === "left" ? "pl-5 pr-3" : "pl-3 pr-5";
+  const borderColor = hasError ? "border-[#ea4335]" : "border-[#b2b2b2]";
   const border =
     side === "left"
-      ? "border border-[#b2b2b2]"
-      : "border-y border-r border-[#b2b2b2]";
+      ? `border ${borderColor}`
+      : `border-y border-r ${borderColor}`;
+
   const colors = isSelected
-    ? "bg-[#1e1e1e] text-[#b2b2b2]"
+    ? "bg-[#1e1e1e] text-[#f0f0f0]"
     : "bg-[#f0f0f0] text-[#b2b2b2]";
 
-  return `h-full w-[61px] ${radius} ${border} ${spacing} text-center text-[16px] leading-[24px] font-medium ${colors}`;
+  return `h-full w-[61px] ${radius} ${border} text-center text-[16px] leading-[24px] font-medium ${colors}`;
 }
 
-function choiceClass(isSelected: boolean) {
+function choiceClass(isSelected: boolean, hasError: boolean) {
   return `h-[44px] rounded-full px-4 text-center text-[16px] leading-[24px] font-medium ${
     isSelected
       ? "bg-[#1e1e1e] text-[#f0f0f0]"
-      : "border border-[#b2b2b2] bg-[#f0f0f0] text-[#b2b2b2]"
+      : `border ${
+          hasError ? "border-[#ea4335]" : "border-[#b2b2b2]"
+        } bg-[#f0f0f0] text-[#b2b2b2]`
   }`;
 }
 
 export function SignupPage() {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"male" | "female" | null>(null);
   const [isAgeOpen, setIsAgeOpen] = useState(false);
@@ -62,6 +71,7 @@ export function SignupPage() {
   const [enrollment, setEnrollment] = useState<"student" | "graduated" | null>(
     null,
   );
+  const [submitClicked, setSubmitClicked] = useState(false);
 
   const isComplete = useMemo(
     () =>
@@ -73,10 +83,30 @@ export function SignupPage() {
     [enrollment, gender, name, school, selectedAge],
   );
 
+  const nameError = submitClicked && name.trim() === "";
+  const genderError = submitClicked && gender === null;
+  const ageError = submitClicked && selectedAge === "";
+  const schoolError = submitClicked && school.trim() === "";
+  const enrollmentError = submitClicked && enrollment === null;
+
+  const handleSubmit = () => {
+    setSubmitClicked(true);
+
+    if (!isComplete) return;
+
+    router.push("/onboarding");
+  };
+
   return (
     <main className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]">
       <section className="mx-auto flex min-h-screen w-full max-w-[1280px] flex-col px-5 pt-[72px]">
-        <form className="mx-auto w-full max-w-[550px]">
+        <form
+          className="mx-auto w-full max-w-[550px]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <h1 className="text-[28px] leading-[38px] font-extrabold tracking-normal">
             회원가입
           </h1>
@@ -86,7 +116,7 @@ export function SignupPage() {
               <FieldLabel>이름</FieldLabel>
               <input
                 className={`${fieldBase} ${
-                  name.trim() === "" ? "border-[#ea4335]" : "border-[#b2b2b2]"
+                  nameError ? "border-[#ea4335]" : "border-[#b2b2b2]"
                 }`}
                 type="text"
                 value={name}
@@ -94,8 +124,8 @@ export function SignupPage() {
                 aria-label="이름"
                 onChange={(event) => setName(event.target.value)}
               />
-              {name.trim() === "" && (
-                <RequiredMessage>필수 입력 사항입니다.</RequiredMessage>
+              {nameError && (
+                <RequiredMessage>필수 입력 사항입니다</RequiredMessage>
               )}
             </div>
 
@@ -106,7 +136,11 @@ export function SignupPage() {
               <div className="flex h-[44px]">
                 <button
                   type="button"
-                  className={segmentedClass(gender === "male", "left")}
+                  className={segmentedClass(
+                    gender === "male",
+                    "left",
+                    genderError,
+                  )}
                   aria-pressed={gender === "male"}
                   onClick={() => setGender("male")}
                 >
@@ -114,15 +148,19 @@ export function SignupPage() {
                 </button>
                 <button
                   type="button"
-                  className={segmentedClass(gender === "female", "right")}
+                  className={segmentedClass(
+                    gender === "female",
+                    "right",
+                    genderError,
+                  )}
                   aria-pressed={gender === "female"}
                   onClick={() => setGender("female")}
                 >
                   여
                 </button>
               </div>
-              {gender === null && (
-                <RequiredMessage>필수 선택 사항입니다.</RequiredMessage>
+              {genderError && (
+                <RequiredMessage>필수 선택 사항입니다</RequiredMessage>
               )}
             </fieldset>
           </div>
@@ -132,7 +170,7 @@ export function SignupPage() {
             <button
               type="button"
               className={`${fieldBase} relative w-full pr-11 text-left ${
-                selectedAge === "" ? "border-[#ea4335]" : "border-[#b2b2b2]"
+                ageError ? "border-[#ea4335]" : "border-[#b2b2b2]"
               } ${selectedAge === "" ? "text-[#b2b2b2]" : "text-[#1e1e1e]"}`}
               aria-expanded={isAgeOpen}
               aria-haspopup="listbox"
@@ -179,8 +217,9 @@ export function SignupPage() {
                 </div>
               </div>
             )}
-            {selectedAge === "" && (
-              <RequiredMessage>필수 선택 사항입니다.</RequiredMessage>
+
+            {ageError && (
+              <RequiredMessage>필수 선택 사항입니다</RequiredMessage>
             )}
           </div>
 
@@ -188,7 +227,7 @@ export function SignupPage() {
             <FieldLabel>학교</FieldLabel>
             <input
               className={`${fieldBase} w-full ${
-                school.trim() === "" ? "border-[#ea4335]" : "border-[#b2b2b2]"
+                schoolError ? "border-[#ea4335]" : "border-[#b2b2b2]"
               }`}
               type="text"
               value={school}
@@ -196,8 +235,8 @@ export function SignupPage() {
               aria-label="학교"
               onChange={(event) => setSchool(event.target.value)}
             />
-            {school.trim() === "" && (
-              <RequiredMessage>필수 입력 사항입니다.</RequiredMessage>
+            {schoolError && (
+              <RequiredMessage>필수 입력 사항입니다</RequiredMessage>
             )}
           </div>
 
@@ -208,7 +247,7 @@ export function SignupPage() {
             <div className="grid grid-cols-2 gap-5 max-sm:grid-cols-1">
               <button
                 type="button"
-                className={choiceClass(enrollment === "student")}
+                className={choiceClass(enrollment === "student", enrollmentError)}
                 aria-pressed={enrollment === "student"}
                 onClick={() => setEnrollment("student")}
               >
@@ -216,27 +255,29 @@ export function SignupPage() {
               </button>
               <button
                 type="button"
-                className={choiceClass(enrollment === "graduated")}
+                className={choiceClass(
+                  enrollment === "graduated",
+                  enrollmentError,
+                )}
                 aria-pressed={enrollment === "graduated"}
                 onClick={() => setEnrollment("graduated")}
               >
                 졸업했어요
               </button>
             </div>
-            {enrollment === null && (
-              <RequiredMessage>필수 선택 사항입니다.</RequiredMessage>
+            {enrollmentError && (
+              <RequiredMessage>필수 선택 사항입니다</RequiredMessage>
             )}
           </fieldset>
 
-          <Link
-            href={isComplete ? "/onboarding" : "#"}
-            aria-disabled={!isComplete}
+          <button
+            type="submit"
             className={`mt-[88px] flex h-[44px] w-full items-center justify-center rounded-full px-4 text-center text-[16px] leading-[24px] font-medium text-[#f0f0f0] ${
               isComplete ? "bg-[#1e1e1e]" : "bg-[#b2b2b2]"
             }`}
           >
             회원가입 완료하기
-          </Link>
+          </button>
         </form>
       </section>
     </main>
