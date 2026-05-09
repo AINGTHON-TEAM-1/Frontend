@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const menuItems = [
   { label: "홈", href: "/mainpage_home_giver", active: true },
-  { label: "탐색", href: "#" },
+  { label: "탐색", href: "/Search_giver" },
   { label: "마이페이지", href: "#" },
 ];
 
