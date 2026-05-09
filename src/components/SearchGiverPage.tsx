@@ -174,12 +174,12 @@ export default function SearchGiverPage() {
               >
                 기버
               </Link>
-              <button
-                type="button"
+              <Link
+                href="/searchtaker"
                 className="flex h-8 w-[72px] items-center justify-center rounded-r-full border border-[#333] bg-[#f0f0f0] pl-[10px] pr-[18px] text-center text-[12px] leading-[18px] font-medium whitespace-nowrap text-[#333]"
               >
                 테이커
-              </button>
+              </Link>
             </div>
           </div>
 
