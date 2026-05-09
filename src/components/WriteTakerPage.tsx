@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ApiError } from "@/lib/api/client";
 import { postsApi } from "@/lib/api/endpoints";
@@ -454,6 +455,7 @@ export default function WriteTakerPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   function toggleTheme(id: ThemeId) {
     setSelectedThemes((prev) =>
@@ -604,7 +606,7 @@ export default function WriteTakerPage() {
       if (typeof window !== "undefined") {
         window.localStorage.removeItem(DRAFT_STORAGE_KEY);
       }
-      router.push("/searchtaker");
+      setSuccessOpen(true);
     } catch (err) {
       if (err instanceof ApiError) {
         setSubmitError(err.detail);
@@ -985,6 +987,17 @@ export default function WriteTakerPage() {
           onClose={() => setRegionModalOpen(false)}
           selected={regions}
           onSelect={setRegions}
+        />
+      )}
+
+      {successOpen && (
+        <MatchSuccessModal
+          title="모집글 등록이 완료되었어요"
+          description="기버가 글을 보고 신청하면 마이페이지에서 확인할 수 있어요."
+          onClose={() => {
+            setSuccessOpen(false);
+            router.push("/searchtaker");
+          }}
         />
       )}
     </main>

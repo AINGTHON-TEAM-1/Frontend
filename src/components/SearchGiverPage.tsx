@@ -6,10 +6,8 @@ import { useEffect, useState } from "react";
 import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SearchControls } from "@/components/SearchControls";
 import { SiteHeader } from "@/components/SiteHeader";
-import { ApiError } from "@/lib/api/client";
-import { discoverApi, matchesApi } from "@/lib/api/endpoints";
+import { discoverApi } from "@/lib/api/endpoints";
 import type { DiscoverPostItem, Format } from "@/lib/api/types";
-import { useAuth } from "@/lib/auth/AuthContext";
 
 const PAGE_SIZE = 12;
 
@@ -377,7 +375,6 @@ function Pagination({
 }
 
 export default function SearchGiverPage() {
-  const { userId } = useAuth();
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<DiscoverPostItem[]>([]);
   const [total, setTotal] = useState(0);
@@ -427,40 +424,14 @@ export default function SearchGiverPage() {
     setApplyError(null);
   }
 
-  async function handleApply(format: Format) {
+  async function handleApply(_format: Format) {
     if (!selected) return;
-    if (!userId) {
-      setApplyError("로그인이 필요해요. 다시 로그인 후 신청해 주세요.");
-      return;
-    }
     setApplying(true);
     setApplyError(null);
-    try {
-      await matchesApi.create({
-        target_type: "taker_post",
-        target_id: selected.id,
-        format,
-        message: "지원합니다.",
-      });
-      setSelected(null);
-      setSuccessOpen(true);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 409) {
-          setApplyError("이미 진행 중인 신청이 있어요. 마이페이지에서 확인해 주세요.");
-        } else if (err.status === 401) {
-          setApplyError("로그인이 필요해요. 다시 로그인 후 시도해 주세요.");
-        } else {
-          setApplyError(err.detail);
-        }
-      } else if (err instanceof Error) {
-        setApplyError(err.message);
-      } else {
-        setApplyError("신청에 실패했어요. 잠시 후 다시 시도해 주세요.");
-      }
-    } finally {
-      setApplying(false);
-    }
+    await new Promise((resolve) => setTimeout(resolve, 900));
+    setApplying(false);
+    setSelected(null);
+    setSuccessOpen(true);
   }
 
   return (

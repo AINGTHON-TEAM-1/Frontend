@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ApiError } from "@/lib/api/client";
 import { aiApi, giversApi } from "@/lib/api/endpoints";
@@ -567,6 +568,7 @@ export default function WriteGiverPage() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [successOpen, setSuccessOpen] = useState(false);
 
   function toggleOffline(next: boolean) {
     setOffline(next);
@@ -680,7 +682,7 @@ export default function WriteGiverPage() {
         }
       }
 
-      router.push("/mypage_giver");
+      setSuccessOpen(true);
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 409) {
@@ -1009,6 +1011,17 @@ export default function WriteGiverPage() {
           onClose={() => setRegionModalOpen(false)}
           selected={regions}
           onSelect={setRegions}
+        />
+      )}
+
+      {successOpen && (
+        <MatchSuccessModal
+          title="기버 프로필 등록이 완료되었어요"
+          description="테이커가 프로필을 보고 신청하면 마이페이지에서 확인할 수 있어요."
+          onClose={() => {
+            setSuccessOpen(false);
+            router.push("/mypage_giver");
+          }}
         />
       )}
     </main>
