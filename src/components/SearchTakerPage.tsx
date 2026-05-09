@@ -107,7 +107,7 @@ function GiverProfileCard({
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="block w-full text-left transition-transform hover:-translate-y-1"
+      className="block w-full text-left transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
     >
       <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 pt-[19px] pb-4 shadow-[0_0_8px_rgba(0,0,0,0.25)]">
         <div className="flex items-start gap-4">
@@ -167,81 +167,91 @@ function GiverDetailModal({
     },
   ];
 
+  const numericRating = Number.parseFloat(item.rating_avg);
+  const ratingDisplay = Number.isFinite(numericRating)
+    ? numericRating.toFixed(1)
+    : item.rating_avg;
+
   return (
     <div
       role="dialog"
       aria-modal="true"
       aria-label="기버 상세"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[85vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[20px] bg-[#f0f0f0] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+        className="flex max-h-[88vh] w-full max-w-[520px] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-[#e3e3e3] px-7 pt-6 pb-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#ccc]">
-              <ProfileIcon className="size-7" />
-            </div>
-            <div className="flex min-w-0 flex-col gap-1">
-              <h3 className="truncate text-[20px] leading-[28px] font-extrabold text-[#1e1e1e]">
-                {item.nickname}
-              </h3>
-              <Rating rating={item.rating_avg} />
-            </div>
-          </div>
+        <div className="relative bg-gradient-to-br from-[#1e1e1e] to-[#2a2a2a] px-8 pt-7 pb-8 text-[#f0f0f0]">
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[18px] text-[#525252] hover:bg-[#e3e3e3]"
+            className="absolute top-5 right-5 flex size-9 items-center justify-center rounded-full bg-white/10 text-[18px] text-white transition hover:bg-white/20"
           >
             ×
           </button>
+
+          <div className="flex flex-col items-center text-center">
+            <div className="flex size-20 items-center justify-center rounded-full bg-white/10 ring-2 ring-white/20">
+              <ProfileIcon className="size-10" />
+            </div>
+
+            <h3 className="mt-4 text-[24px] leading-[32px] font-extrabold">
+              {item.nickname}
+            </h3>
+
+            <div className="mt-2 flex items-center gap-2 text-[13px] leading-[18px] font-medium text-[#e8e8e8]">
+              <div className="flex items-center gap-0.5">
+                <span className="text-[14px] text-[#ffd166]">★</span>
+                <span className="font-bold text-white">{ratingDisplay}</span>
+              </div>
+              <span className="text-[#7a7a7a]">·</span>
+              <span>리뷰 {item.rating_count}건</span>
+              <span className="text-[#7a7a7a]">·</span>
+              <span>매칭 {item.match_count}회</span>
+            </div>
+
+            {item.bio_short && (
+              <p className="mt-5 max-w-[360px] text-[13px] leading-[20px] font-medium text-[#d6d6d6]">
+                &ldquo;{item.bio_short}&rdquo;
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-7 py-6">
-          <h4 className="text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
-            한 줄 소개
-          </h4>
-          <p className="mt-2 text-[14px] leading-[22px] font-medium text-[#1e1e1e]">
-            {item.bio_short ?? "기버의 한 줄 소개가 아직 없어요."}
-          </p>
-
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <div className="rounded-[12px] bg-white px-4 py-3 shadow-[0_0_4px_rgba(0,0,0,0.12)]">
-              <p className="text-[11px] leading-[14px] font-medium text-[#525252]">
-                매칭
-              </p>
-              <p className="mt-1 text-[18px] leading-[26px] font-extrabold text-[#1e1e1e]">
-                {item.match_count}회
-              </p>
-            </div>
-            <div className="rounded-[12px] bg-white px-4 py-3 shadow-[0_0_4px_rgba(0,0,0,0.12)]">
-              <p className="text-[11px] leading-[14px] font-medium text-[#525252]">
-                리뷰
-              </p>
-              <p className="mt-1 text-[18px] leading-[26px] font-extrabold text-[#1e1e1e]">
-                {item.rating_count}건
-              </p>
-            </div>
-          </div>
-
-          <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+        <div className="flex-1 overflow-y-auto px-8 py-7">
+          <h4 className="text-[11px] leading-[14px] font-bold tracking-[0.15em] text-[#525252] uppercase">
             제공 서비스
           </h4>
-          <ul className="mt-2 flex flex-col gap-2">
+          <ul className="mt-3 flex flex-col gap-2">
             {services.map((service) => (
               <li
                 key={service.label}
-                className="flex items-center justify-between rounded-[10px] bg-white px-4 py-2 text-[13px] leading-[20px] shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+                className={`flex items-center justify-between rounded-[14px] px-4 py-3 transition ${
+                  service.available
+                    ? "bg-[#f7f7f7]"
+                    : "bg-[#fafafa] opacity-60"
+                }`}
               >
-                <span className="font-bold text-[#1e1e1e]">
-                  {service.label}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`flex size-7 items-center justify-center rounded-full text-[12px] font-bold ${
+                      service.available
+                        ? "bg-[#1e1e1e] text-white"
+                        : "bg-[#e3e3e3] text-[#979797]"
+                    }`}
+                  >
+                    {service.available ? "✓" : "×"}
+                  </span>
+                  <span className="text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+                    {service.label}
+                  </span>
+                </div>
                 <span
-                  className={`font-medium ${
+                  className={`text-[14px] leading-[20px] font-bold ${
                     service.available ? "text-[#1e1e1e]" : "text-[#979797]"
                   }`}
                 >
@@ -256,43 +266,53 @@ function GiverDetailModal({
           </ul>
 
           {item.tags.length > 0 && (
-            <>
-              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
-                태그
+            <div className="mt-7">
+              <h4 className="text-[11px] leading-[14px] font-bold tracking-[0.15em] text-[#525252] uppercase">
+                전문 분야
               </h4>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {item.tags.map((tag) => (
-                  <MiniTag key={tag}>#{tag}</MiniTag>
+                  <span
+                    key={tag}
+                    className="rounded-full bg-[#1e1e1e] px-3.5 py-1.5 text-[12px] leading-[16px] font-medium text-[#f0f0f0]"
+                  >
+                    #{tag}
+                  </span>
                 ))}
               </div>
-            </>
+            </div>
           )}
 
           {item.categories.length > 0 && (
-            <>
-              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
-                활동 분야
+            <div className="mt-6">
+              <h4 className="text-[11px] leading-[14px] font-bold tracking-[0.15em] text-[#525252] uppercase">
+                활동 카테고리
               </h4>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {item.categories.map((category) => (
-                  <MiniTag key={category}>{category}</MiniTag>
+                  <span
+                    key={category}
+                    className="rounded-full border border-[#1e1e1e] bg-white px-3.5 py-1.5 text-[12px] leading-[16px] font-medium text-[#1e1e1e]"
+                  >
+                    {category}
+                  </span>
                 ))}
               </div>
-            </>
+            </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#e3e3e3] px-7 py-4">
+        <div className="flex gap-3 border-t border-[#e8e8e8] bg-[#fafafa] px-8 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-full bg-[#e3e3e3] px-5 text-[13px] leading-[40px] font-medium text-[#1e1e1e]"
+            className="h-11 flex-1 rounded-full border border-[#1e1e1e] bg-transparent text-[14px] leading-[44px] font-bold text-[#1e1e1e] transition hover:bg-[#1e1e1e] hover:text-[#f0f0f0]"
           >
             닫기
           </button>
           <button
             type="button"
-            className="h-10 rounded-full bg-[#1e1e1e] px-5 text-[13px] leading-[40px] font-bold text-[#f0f0f0]"
+            className="h-11 flex-[2] rounded-full bg-[#1e1e1e] text-[14px] leading-[44px] font-bold text-[#f0f0f0] shadow-[0_4px_16px_rgba(30,30,30,0.3)] transition hover:bg-[#333]"
           >
             매칭 신청하기
           </button>

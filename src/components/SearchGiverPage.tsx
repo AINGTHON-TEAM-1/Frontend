@@ -75,7 +75,7 @@ function JobCard({
     <button
       type="button"
       onClick={() => onSelect(item)}
-      className="block w-full text-left transition-transform hover:-translate-y-1"
+      className="block w-full text-left transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
     >
       <article className="flex h-[247px] flex-col overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
         <div className="flex h-10 items-center gap-1 px-4 pt-3 pb-2.5 shadow-[0_0_4px_rgba(0,0,0,0.25)]">
@@ -107,12 +107,36 @@ function JobCard({
 function statusLabel(status: DiscoverPostItem["status"]): string {
   switch (status) {
     case "open":
-      return "모집 중";
+      return "● 모집 중";
     case "matched":
-      return "매칭 완료";
+      return "● 매칭 완료";
     case "closed":
-      return "모집 마감";
+      return "● 모집 마감";
   }
+}
+
+function statusBadgeClass(status: DiscoverPostItem["status"]): string {
+  switch (status) {
+    case "open":
+      return "bg-[#34a853]/20 text-[#7be29c]";
+    case "matched":
+      return "bg-[#5b8def]/20 text-[#a4c4f7]";
+    case "closed":
+      return "bg-white/10 text-[#bdbdbd]";
+  }
+}
+
+function StatBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[16px] bg-[#f7f7f7] px-4 py-3.5">
+      <p className="text-[10px] leading-[14px] font-bold tracking-[0.12em] text-[#979797] uppercase">
+        {label}
+      </p>
+      <p className="mt-1.5 text-[15px] leading-[22px] font-extrabold text-[#1e1e1e]">
+        {value}
+      </p>
+    </div>
+  );
 }
 
 function PostDetailModal({
@@ -135,79 +159,112 @@ function PostDetailModal({
       role="dialog"
       aria-modal="true"
       aria-label="구인글 상세"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="flex max-h-[85vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[20px] bg-[#f0f0f0] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+        className="flex max-h-[88vh] w-full max-w-[640px] flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-[#e3e3e3] px-7 pt-6 pb-5">
-          <div className="flex min-w-0 flex-col gap-1">
-            <span className="text-[12px] leading-[18px] font-medium text-[#525252]">
-              {item.author_nickname}
-            </span>
-            <h3 className="text-[20px] leading-[28px] font-extrabold text-[#1e1e1e]">
-              {item.title}
-            </h3>
-          </div>
+        <div className="relative bg-gradient-to-br from-[#1e1e1e] to-[#2a2a2a] px-8 pt-7 pb-8 text-[#f0f0f0]">
           <button
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[18px] text-[#525252] hover:bg-[#e3e3e3]"
+            className="absolute top-5 right-5 flex size-9 items-center justify-center rounded-full bg-white/10 text-[18px] text-white transition hover:bg-white/20"
           >
             ×
           </button>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-7 py-6">
-          <div className="flex flex-wrap gap-2">
-            <MiniTag>{statusLabel(item.status)}</MiniTag>
-            <MiniTag>{formatBudget(item)}</MiniTag>
-            <MiniTag>신청 {item.application_count}건</MiniTag>
-            {item.preferred_format && (
-              <MiniTag>{formatLabel(item.preferred_format)}</MiniTag>
+          <div className="flex flex-wrap items-center gap-2 pr-12">
+            <span
+              className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] leading-[14px] font-bold ${statusBadgeClass(item.status)}`}
+            >
+              {statusLabel(item.status)}
+            </span>
+            {item.category && (
+              <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] leading-[14px] font-medium text-[#e8e8e8]">
+                {item.category}
+              </span>
             )}
-            {item.category && <MiniTag>{item.category}</MiniTag>}
           </div>
 
-          <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
-            본문 미리보기
-          </h4>
-          <p className="mt-2 whitespace-pre-line text-[14px] leading-[22px] font-medium text-[#1e1e1e]">
-            {item.body_preview}
-          </p>
+          <h3 className="mt-3 pr-8 text-[24px] leading-[32px] font-extrabold">
+            {item.title}
+          </h3>
 
-          {item.tags.length > 0 && (
-            <>
-              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
-                태그
-              </h4>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {item.tags.map((tag) => (
-                  <MiniTag key={tag}>#{tag}</MiniTag>
-                ))}
-              </div>
-            </>
-          )}
-
-          <p className="mt-6 text-[12px] leading-[18px] font-medium text-[#525252]">
-            등록일 {new Date(item.created_at).toLocaleDateString("ko-KR")}
-          </p>
+          <div className="mt-4 flex items-center gap-2 text-[13px] leading-[18px] font-medium text-[#bdbdbd]">
+            <span className="flex size-7 items-center justify-center rounded-full bg-white/10">
+              <ProfileIcon className="size-4" />
+            </span>
+            <span className="text-white">{item.author_nickname}</span>
+            <span className="text-[#7a7a7a]">·</span>
+            <span>
+              {new Date(item.created_at).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#e3e3e3] px-7 py-4">
+        <div className="flex-1 overflow-y-auto px-8 py-7">
+          <div className="grid grid-cols-3 gap-3">
+            <StatBlock label="예산" value={formatBudget(item)} />
+            <StatBlock
+              label="신청자"
+              value={`${item.application_count}명`}
+            />
+            <StatBlock
+              label="형태"
+              value={
+                item.preferred_format
+                  ? formatLabel(item.preferred_format)
+                  : "미정"
+              }
+            />
+          </div>
+
+          <div className="mt-7">
+            <h4 className="text-[11px] leading-[14px] font-bold tracking-[0.15em] text-[#525252] uppercase">
+              상세 내용
+            </h4>
+            <p className="mt-3 text-[14px] leading-[24px] font-medium whitespace-pre-line text-[#1e1e1e]">
+              {item.body_preview}
+            </p>
+          </div>
+
+          {item.tags.length > 0 && (
+            <div className="mt-7">
+              <h4 className="text-[11px] leading-[14px] font-bold tracking-[0.15em] text-[#525252] uppercase">
+                태그
+              </h4>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {item.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-[#f0f0f0] px-3.5 py-1.5 text-[12px] leading-[16px] font-medium text-[#1e1e1e]"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex gap-3 border-t border-[#e8e8e8] bg-[#fafafa] px-8 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-full bg-[#e3e3e3] px-5 text-[13px] leading-[40px] font-medium text-[#1e1e1e]"
+            className="h-11 flex-1 rounded-full border border-[#1e1e1e] bg-transparent text-[14px] leading-[44px] font-bold text-[#1e1e1e] transition hover:bg-[#1e1e1e] hover:text-[#f0f0f0]"
           >
             닫기
           </button>
           <button
             type="button"
-            className="h-10 rounded-full bg-[#1e1e1e] px-5 text-[13px] leading-[40px] font-bold text-[#f0f0f0]"
+            className="h-11 flex-[2] rounded-full bg-[#1e1e1e] text-[14px] leading-[44px] font-bold text-[#f0f0f0] shadow-[0_4px_16px_rgba(30,30,30,0.3)] transition hover:bg-[#333]"
           >
             지원하기
           </button>
