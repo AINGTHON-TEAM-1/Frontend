@@ -119,11 +119,7 @@ export function LoginPage() {
     setError(null);
     try {
       signIn(selectedUser.id);
-      const target =
-        selectedUser.role === "giver"
-          ? "/mainpage_home_giver"
-          : "/mainpage_home_taker";
-      router.push(target);
+      router.push("/signup");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.detail);
