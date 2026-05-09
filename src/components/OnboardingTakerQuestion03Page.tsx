@@ -26,7 +26,7 @@ function StepTag({
       }`}
     >
       <span
-        className={`text-[14px] leading-[20px] font-medium whitespace-nowrap ${
+        className={`whitespace-nowrap text-[14px] leading-[20px] font-medium ${
           active ? "text-[#f0f0f0]" : "text-[#979797]"
         }`}
       >
@@ -52,6 +52,7 @@ function ProgressLine() {
 
 export default function OnboardingTakerQuestion03Page() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [customReason, setCustomReason] = useState("");
 
   const toggleOption = (option: string) => {
     setSelectedOptions((current) =>
@@ -61,7 +62,11 @@ export default function OnboardingTakerQuestion03Page() {
     );
   };
 
-  const canSubmit = selectedOptions.length > 0;
+  const isEtcSelected = selectedOptions.includes("기타");
+
+  const canSubmit =
+    selectedOptions.length > 0 &&
+    (!isEtcSelected || customReason.trim().length > 0);
 
   return (
     <main
@@ -95,19 +100,32 @@ export default function OnboardingTakerQuestion03Page() {
               const isSelected = selectedOptions.includes(option);
 
               return (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => toggleOption(option)}
-                  className={`h-[44px] w-full rounded-[8px] px-4 text-center text-[16px] leading-[24px] font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-colors ${
-                    isSelected
-                      ? "bg-[#b2b2b2] text-[#1e1e1e]"
-                      : "bg-[#f0f0f0] text-[#1e1e1e]"
-                  }`}
-                >
-                  {option}
-                </button>
+                <div key={option}>
+                  <button
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => toggleOption(option)}
+                    className={`h-[44px] w-full rounded-[8px] px-4 text-center text-[16px] leading-[24px] font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-colors ${
+                      isSelected
+                        ? "bg-[#b2b2b2] text-[#1e1e1e]"
+                        : "bg-[#f0f0f0] text-[#1e1e1e]"
+                    }`}
+                  >
+                    {option}
+                  </button>
+
+                  {option === "기타" && isSelected && (
+                    <input
+                      type="text"
+                      value={customReason}
+                      onChange={(event) =>
+                        setCustomReason(event.target.value)
+                      }
+                      placeholder="직접 입력해 주세요"
+                      className="mt-3 h-[44px] w-full rounded-[8px] bg-[#f0f0f0] px-4 text-[16px] leading-[24px] font-medium text-[#1e1e1e] shadow-[0_0_8px_rgba(0,0,0,0.25)] outline-none placeholder:text-[#979797]"
+                    />
+                  )}
+                </div>
               );
             })}
           </div>

@@ -18,14 +18,14 @@ const options: Array<{
     icon: "/figma/giver-icon.png",
     alt: "정보 공유",
     lines: ["내가 알고 있는 정보를", "공유하고 싶어요"],
-    contentWidth: "w-[160px]",
+    contentWidth: "w-[220px]",
   },
   {
     id: "taker",
     icon: "/figma/taker-icon.png",
     alt: "커뮤니티 운영 관리",
     lines: ["커뮤니티 운영을 관리받고", "정보를 얻고 싶어요"],
-    contentWidth: "w-[180px]",
+    contentWidth: "w-[220px]",
   },
 ];
 

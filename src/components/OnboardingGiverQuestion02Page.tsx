@@ -26,7 +26,7 @@ function StepTag({
       }`}
     >
       <span
-        className={`text-[14px] leading-[20px] font-medium whitespace-nowrap ${
+        className={`whitespace-nowrap text-[14px] leading-[20px] font-medium ${
           active ? "text-[#f0f0f0]" : "text-[#979797]"
         }`}
       >
@@ -87,10 +87,20 @@ export default function OnboardingGiverQuestion02Page() {
           <div className="mt-[74px] flex flex-wrap gap-x-[15px] gap-y-8">
             {suggestionOptions.map((topic) => {
               const isSelected = selectedTopic === topic;
-              const isWide =
-                topic === "대학 연합 동아리" ||
-                topic === "대학생 해커톤 개최 및 운영";
-              const widthClass = isWide ? "w-[265px]" : "w-[122px]";
+
+              let widthClass = "w-[122px]";
+
+              if (topic === "대학 연합 동아리") {
+                widthClass = "w-[265px]";
+              }
+
+              if (topic === "스터디원 모집") {
+                widthClass = "w-[160px]";
+              }
+
+              if (topic === "대학생 해커톤 개최 및 운영") {
+                widthClass = "w-[265px]";
+              }
 
               return (
                 <button
@@ -98,7 +108,7 @@ export default function OnboardingGiverQuestion02Page() {
                   type="button"
                   aria-pressed={isSelected}
                   onClick={() => setSelectedTopic(topic)}
-                  className={`${widthClass} h-[44px] rounded-full px-4 text-center text-[16px] leading-[24px] font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-colors ${
+                  className={`${widthClass} h-[44px] whitespace-nowrap rounded-full px-4 text-center text-[16px] leading-[24px] font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] transition-colors ${
                     isSelected
                       ? "bg-[#b2b2b2] text-[#1e1e1e]"
                       : "bg-[#f0f0f0] text-[#1e1e1e]"
