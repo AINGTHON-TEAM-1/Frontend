@@ -64,31 +64,156 @@ function formatBudget(item: DiscoverPostItem): string {
   return `${item.budget_min!.toLocaleString()}원~`;
 }
 
-function JobCard({ item }: { item: DiscoverPostItem }) {
+function JobCard({
+  item,
+  onSelect,
+}: {
+  item: DiscoverPostItem;
+  onSelect: (item: DiscoverPostItem) => void;
+}) {
   return (
-    <article className="flex h-[247px] flex-col overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
-      <div className="flex h-10 items-center gap-1 px-4 pt-3 pb-2.5 shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-        <ProfileIcon />
-        <span className="text-[12px] leading-[18px] font-medium text-[#1e1e1e]">
-          {item.author_nickname}
-        </span>
-      </div>
-      <div className="flex-1 px-4 pt-3 pb-2 text-[12px] leading-[18px] font-medium text-[#525252]">
-        <p className="line-clamp-4">{item.body_preview}</p>
-      </div>
-      <div className="px-4 pt-2 pb-[18px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-        <h2 className="line-clamp-2 text-[16px] leading-6 font-bold text-[#1e1e1e]">
-          {item.title}
-        </h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <MiniTag>{formatBudget(item)}</MiniTag>
-          <MiniTag>신청 {item.application_count}건</MiniTag>
-          {item.preferred_format && (
-            <MiniTag>{formatLabel(item.preferred_format)}</MiniTag>
+    <button
+      type="button"
+      onClick={() => onSelect(item)}
+      className="block w-full text-left transition-transform hover:-translate-y-1"
+    >
+      <article className="flex h-[247px] flex-col overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
+        <div className="flex h-10 items-center gap-1 px-4 pt-3 pb-2.5 shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+          <ProfileIcon />
+          <span className="text-[12px] leading-[18px] font-medium text-[#1e1e1e]">
+            {item.author_nickname}
+          </span>
+        </div>
+        <div className="flex-1 px-4 pt-3 pb-2 text-[12px] leading-[18px] font-medium text-[#525252]">
+          <p className="line-clamp-4">{item.body_preview}</p>
+        </div>
+        <div className="px-4 pt-2 pb-[18px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+          <h2 className="line-clamp-2 text-[16px] leading-6 font-bold text-[#1e1e1e]">
+            {item.title}
+          </h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <MiniTag>{formatBudget(item)}</MiniTag>
+            <MiniTag>신청 {item.application_count}건</MiniTag>
+            {item.preferred_format && (
+              <MiniTag>{formatLabel(item.preferred_format)}</MiniTag>
+            )}
+          </div>
+        </div>
+      </article>
+    </button>
+  );
+}
+
+function statusLabel(status: DiscoverPostItem["status"]): string {
+  switch (status) {
+    case "open":
+      return "모집 중";
+    case "matched":
+      return "매칭 완료";
+    case "closed":
+      return "모집 마감";
+  }
+}
+
+function PostDetailModal({
+  item,
+  onClose,
+}: {
+  item: DiscoverPostItem;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="구인글 상세"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[85vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[20px] bg-[#f0f0f0] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-[#e3e3e3] px-7 pt-6 pb-5">
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="text-[12px] leading-[18px] font-medium text-[#525252]">
+              {item.author_nickname}
+            </span>
+            <h3 className="text-[20px] leading-[28px] font-extrabold text-[#1e1e1e]">
+              {item.title}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[18px] text-[#525252] hover:bg-[#e3e3e3]"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-7 py-6">
+          <div className="flex flex-wrap gap-2">
+            <MiniTag>{statusLabel(item.status)}</MiniTag>
+            <MiniTag>{formatBudget(item)}</MiniTag>
+            <MiniTag>신청 {item.application_count}건</MiniTag>
+            {item.preferred_format && (
+              <MiniTag>{formatLabel(item.preferred_format)}</MiniTag>
+            )}
+            {item.category && <MiniTag>{item.category}</MiniTag>}
+          </div>
+
+          <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+            본문 미리보기
+          </h4>
+          <p className="mt-2 whitespace-pre-line text-[14px] leading-[22px] font-medium text-[#1e1e1e]">
+            {item.body_preview}
+          </p>
+
+          {item.tags.length > 0 && (
+            <>
+              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+                태그
+              </h4>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {item.tags.map((tag) => (
+                  <MiniTag key={tag}>#{tag}</MiniTag>
+                ))}
+              </div>
+            </>
           )}
+
+          <p className="mt-6 text-[12px] leading-[18px] font-medium text-[#525252]">
+            등록일 {new Date(item.created_at).toLocaleDateString("ko-KR")}
+          </p>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#e3e3e3] px-7 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 rounded-full bg-[#e3e3e3] px-5 text-[13px] leading-[40px] font-medium text-[#1e1e1e]"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            className="h-10 rounded-full bg-[#1e1e1e] px-5 text-[13px] leading-[40px] font-bold text-[#f0f0f0]"
+          >
+            지원하기
+          </button>
         </div>
       </div>
-    </article>
+    </div>
   );
 }
 
@@ -173,6 +298,7 @@ export default function SearchGiverPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<DiscoverPostItem | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -241,7 +367,7 @@ export default function SearchGiverPage() {
             <>
               <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-8">
                 {items.map((item) => (
-                  <JobCard key={item.id} item={item} />
+                  <JobCard key={item.id} item={item} onSelect={setSelected} />
                 ))}
               </div>
               <Pagination page={page} total={total} onPage={handlePageChange} />
@@ -249,6 +375,10 @@ export default function SearchGiverPage() {
           )}
         </div>
       </section>
+
+      {selected && (
+        <PostDetailModal item={selected} onClose={() => setSelected(null)} />
+      )}
     </main>
   );
 }

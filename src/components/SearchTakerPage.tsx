@@ -85,7 +85,13 @@ function Rating({ rating }: { rating: string }) {
   );
 }
 
-function GiverProfileCard({ item }: { item: DiscoverGiverItem }) {
+function GiverProfileCard({
+  item,
+  onSelect,
+}: {
+  item: DiscoverGiverItem;
+  onSelect: (item: DiscoverGiverItem) => void;
+}) {
   const tags = item.tags.slice(0, 3);
   const fallbackTags =
     tags.length === 0
@@ -98,31 +104,201 @@ function GiverProfileCard({ item }: { item: DiscoverGiverItem }) {
       : tags;
 
   return (
-    <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 pt-[19px] pb-4 shadow-[0_0_8px_rgba(0,0,0,0.25)]">
-      <div className="flex items-start gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ccc] p-2">
-          <ProfileIcon className="size-6" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="truncate text-[14px] leading-5 font-bold text-[#1e1e1e]">
-              {item.nickname}
-            </h2>
-            <Rating rating={item.rating_avg} />
+    <button
+      type="button"
+      onClick={() => onSelect(item)}
+      className="block w-full text-left transition-transform hover:-translate-y-1"
+    >
+      <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 pt-[19px] pb-4 shadow-[0_0_8px_rgba(0,0,0,0.25)]">
+        <div className="flex items-start gap-4">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ccc] p-2">
+            <ProfileIcon className="size-6" />
           </div>
-          <p className="mt-[6px] line-clamp-2 text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
-            {item.bio_short ?? "기버의 한 줄 소개를 입력해 주세요"}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="truncate text-[14px] leading-5 font-bold text-[#1e1e1e]">
+                {item.nickname}
+              </h2>
+              <Rating rating={item.rating_avg} />
+            </div>
+            <p className="mt-[6px] line-clamp-2 text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
+              {item.bio_short ?? "기버의 한 줄 소개를 입력해 주세요"}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          {fallbackTags.length === 0 ? (
+            <MiniTag>매칭 {item.match_count}회</MiniTag>
+          ) : (
+            fallbackTags.map((tag) => <MiniTag key={tag}>#{tag}</MiniTag>)
+          )}
+        </div>
+      </article>
+    </button>
+  );
+}
+
+function GiverDetailModal({
+  item,
+  onClose,
+}: {
+  item: DiscoverGiverItem;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
+  const services: { label: string; available: boolean; price?: number }[] = [
+    { label: "프리챗", available: item.freechat_enabled },
+    {
+      label: "커피챗",
+      available: item.coffeechat_price > 0,
+      price: item.coffeechat_price,
+    },
+    {
+      label: "밀챗",
+      available: item.mealchat_price > 0,
+      price: item.mealchat_price,
+    },
+  ];
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="기버 상세"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="flex max-h-[85vh] w-full max-w-[480px] flex-col overflow-hidden rounded-[20px] bg-[#f0f0f0] shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4 border-b border-[#e3e3e3] px-7 pt-6 pb-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#ccc]">
+              <ProfileIcon className="size-7" />
+            </div>
+            <div className="flex min-w-0 flex-col gap-1">
+              <h3 className="truncate text-[20px] leading-[28px] font-extrabold text-[#1e1e1e]">
+                {item.nickname}
+              </h3>
+              <Rating rating={item.rating_avg} />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full text-[18px] text-[#525252] hover:bg-[#e3e3e3]"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-7 py-6">
+          <h4 className="text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+            한 줄 소개
+          </h4>
+          <p className="mt-2 text-[14px] leading-[22px] font-medium text-[#1e1e1e]">
+            {item.bio_short ?? "기버의 한 줄 소개가 아직 없어요."}
           </p>
+
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="rounded-[12px] bg-white px-4 py-3 shadow-[0_0_4px_rgba(0,0,0,0.12)]">
+              <p className="text-[11px] leading-[14px] font-medium text-[#525252]">
+                매칭
+              </p>
+              <p className="mt-1 text-[18px] leading-[26px] font-extrabold text-[#1e1e1e]">
+                {item.match_count}회
+              </p>
+            </div>
+            <div className="rounded-[12px] bg-white px-4 py-3 shadow-[0_0_4px_rgba(0,0,0,0.12)]">
+              <p className="text-[11px] leading-[14px] font-medium text-[#525252]">
+                리뷰
+              </p>
+              <p className="mt-1 text-[18px] leading-[26px] font-extrabold text-[#1e1e1e]">
+                {item.rating_count}건
+              </p>
+            </div>
+          </div>
+
+          <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+            제공 서비스
+          </h4>
+          <ul className="mt-2 flex flex-col gap-2">
+            {services.map((service) => (
+              <li
+                key={service.label}
+                className="flex items-center justify-between rounded-[10px] bg-white px-4 py-2 text-[13px] leading-[20px] shadow-[0_0_4px_rgba(0,0,0,0.1)]"
+              >
+                <span className="font-bold text-[#1e1e1e]">
+                  {service.label}
+                </span>
+                <span
+                  className={`font-medium ${
+                    service.available ? "text-[#1e1e1e]" : "text-[#979797]"
+                  }`}
+                >
+                  {service.available
+                    ? service.price && service.price > 0
+                      ? `${service.price.toLocaleString()}원`
+                      : "이용 가능"
+                    : "미제공"}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {item.tags.length > 0 && (
+            <>
+              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+                태그
+              </h4>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {item.tags.map((tag) => (
+                  <MiniTag key={tag}>#{tag}</MiniTag>
+                ))}
+              </div>
+            </>
+          )}
+
+          {item.categories.length > 0 && (
+            <>
+              <h4 className="mt-6 text-[14px] leading-[20px] font-bold text-[#1e1e1e]">
+                활동 분야
+              </h4>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {item.categories.map((category) => (
+                  <MiniTag key={category}>{category}</MiniTag>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-[#e3e3e3] px-7 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 rounded-full bg-[#e3e3e3] px-5 text-[13px] leading-[40px] font-medium text-[#1e1e1e]"
+          >
+            닫기
+          </button>
+          <button
+            type="button"
+            className="h-10 rounded-full bg-[#1e1e1e] px-5 text-[13px] leading-[40px] font-bold text-[#f0f0f0]"
+          >
+            매칭 신청하기
+          </button>
         </div>
       </div>
-      <div className="mt-4 flex items-center gap-2">
-        {fallbackTags.length === 0 ? (
-          <MiniTag>매칭 {item.match_count}회</MiniTag>
-        ) : (
-          fallbackTags.map((tag) => <MiniTag key={tag}>#{tag}</MiniTag>)
-        )}
-      </div>
-    </article>
+    </div>
   );
 }
 
@@ -196,6 +372,7 @@ export default function SearchTakerPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<DiscoverGiverItem | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -264,7 +441,11 @@ export default function SearchTakerPage() {
             <>
               <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-10">
                 {items.map((item) => (
-                  <GiverProfileCard key={item.id} item={item} />
+                  <GiverProfileCard
+                    key={item.id}
+                    item={item}
+                    onSelect={setSelected}
+                  />
                 ))}
               </div>
               <Pagination page={page} total={total} onPage={handlePageChange} />
@@ -272,6 +453,10 @@ export default function SearchTakerPage() {
           )}
         </div>
       </section>
+
+      {selected && (
+        <GiverDetailModal item={selected} onClose={() => setSelected(null)} />
+      )}
     </main>
   );
 }
