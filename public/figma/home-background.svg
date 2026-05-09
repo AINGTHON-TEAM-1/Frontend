@@ -1,0 +1,36 @@
+<svg width="1288" height="808" viewBox="0 0 1288 808" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g filter="url(#filter0_f_73_572)" opacity="0.2">
+    <image href="/figma/search-giver/card-1.png" x="4" y="4" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-2.png" x="285" y="4" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-3.png" x="566" y="4" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-4.png" x="847" y="4" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-7.png" x="1128" y="4" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-8.png" x="-137" y="176" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-1.png" x="144" y="176" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-2.png" x="425" y="176" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-3.png" x="706" y="176" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-4.png" x="987" y="176" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-7.png" x="4" y="348" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-8.png" x="285" y="348" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-1.png" x="566" y="348" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-2.png" x="847" y="348" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-3.png" x="1128" y="348" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-4.png" x="-137" y="520" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-7.png" x="144" y="520" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-8.png" x="425" y="520" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-1.png" x="706" y="520" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-2.png" x="987" y="520" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-3.png" x="4" y="692" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-4.png" x="285" y="692" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-7.png" x="566" y="692" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-8.png" x="847" y="692" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+    <image href="/figma/search-giver/card-1.png" x="1128" y="692" width="265" height="147" preserveAspectRatio="xMidYMid slice"/>
+  </g>
+  <defs>
+    <filter id="filter0_f_73_572" x="0" y="0" width="1288" height="808" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="2" result="effect1_foregroundBlur_73_572"/>
+    </filter>
+  </defs>
+</svg>

@@ -16,7 +16,7 @@ const giverProfiles = [
   },
   { name: "김정민", rating: "5.0" },
   { name: "윤지현", rating: "5.0" },
-  { name: "김지혜", rating: "5.0" },
+  { name: "김지현", rating: "5.0" },
   { name: "이태호", rating: "5.0" },
   { name: "서상민", rating: "5.0" },
   { name: "노규형", rating: "5.0" },
@@ -26,16 +26,16 @@ const giverProfiles = [
     rating: "5.0",
     description: ["디스코드 OO서버 1.5년 운영 경험", "여러 온라인 서버 멘토 경험 다수"],
   },
-  { name: "김경환", rating: "5.0" },
-  { name: "김뫄뫄", rating: "5.0" },
+  { name: "김경한", rating: "5.0" },
+  { name: "김와와", rating: "5.0" },
   { name: "박솨솨", rating: "5.0" },
 ];
 
-function ProfileIcon() {
+function ProfileIcon({ className = "size-4" }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
-      className="size-6 shrink-0"
+      className={className}
       viewBox="0 0 24 24"
       fill="none"
     >
@@ -49,17 +49,157 @@ function ProfileIcon() {
 
 function StarIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="size-4 shrink-0"
-      viewBox="0 0 16 16"
-      fill="none"
-    >
+    <svg aria-hidden="true" className="size-4" viewBox="0 0 16 16" fill="none">
       <path
         d="m8 1.6 1.85 3.75 4.14.6-3 2.93.71 4.12L8 11.05 4.3 13l.71-4.12-3-2.93 4.14-.6L8 1.6Z"
         fill="#1e1e1e"
       />
     </svg>
+  );
+}
+
+function ChevronDown() {
+  return (
+    <svg aria-hidden="true" className="size-3" viewBox="0 0 12 12" fill="none">
+      <path
+        d="M2 4.25 6 8l4-3.75"
+        stroke="#979797"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-5"
+      viewBox="0 0 20 20"
+      fill="none"
+    >
+      <path
+        d="m14.2 14.2 3 3M8.8 15.4a6.6 6.6 0 1 1 0-13.2 6.6 6.6 0 0 1 0 13.2Z"
+        stroke="#8c8c8c"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function Header() {
+  return (
+    <header className="sticky top-0 z-20 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+      <nav className="mx-auto flex items-center gap-10">
+        {menuItems.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className={`text-[16px] leading-[24px] ${
+              item.active ? "font-bold" : "font-medium"
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="absolute right-[45px] flex items-center gap-4">
+        <button
+          type="button"
+          className="flex size-9 items-center justify-center"
+          aria-label="마이페이지"
+        >
+          <Image
+            src="/figma/my-icon.svg"
+            alt=""
+            width={24}
+            height={24}
+            className="size-6"
+          />
+        </button>
+        <Link
+          href="/login"
+          className="flex size-9 items-center justify-center"
+          aria-label="로그아웃"
+        >
+          <Image
+            src="/figma/logout-icon.svg"
+            alt=""
+            width={24}
+            height={24}
+            className="size-6"
+          />
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+function SearchControls() {
+  return (
+    <div className="relative mt-8 flex h-11 w-full items-center gap-4">
+      <button
+        type="button"
+        className="flex h-11 w-[122px] shrink-0 items-center justify-between rounded-full border border-[#b2b2b2] px-4 text-[14px] leading-5 font-medium text-[#979797]"
+      >
+        제목 + 내용
+        <ChevronDown />
+      </button>
+      <label className="flex h-11 min-w-0 flex-1 items-center justify-between rounded-full border border-[#b2b2b2] px-4 py-2.5">
+        <span className="sr-only">검색어</span>
+        <input
+          className="min-w-0 flex-1 bg-transparent text-[14px] leading-5 font-medium text-[#1e1e1e] outline-none placeholder:text-[#8c8c8c]"
+          placeholder="검색어를 입력하세요."
+        />
+        <SearchIcon />
+      </label>
+
+      <div className="absolute left-0 top-[52px] z-10 h-[172px] w-[122px] rounded-xl bg-[#f0f0f0] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+        {["제목+내용", "제목", "작성자", "내용"].map((label, index) => (
+          <button
+            key={label}
+            type="button"
+            className={`flex h-10 w-full items-center px-4 text-left text-[16px] leading-6 font-medium text-[#1e1e1e] ${
+              index === 0 ? "pt-1" : ""
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ModeSwitch() {
+  return (
+    <div className="flex h-8 overflow-hidden rounded-full" aria-label="탐색 대상 선택">
+      <Link
+        href="/Search_giver"
+        className="flex h-8 w-[72px] items-center justify-center rounded-l-full border border-[#333] bg-[#f0f0f0] pl-[18px] pr-[10px] text-[12px] leading-[18px] font-medium text-[#333]"
+      >
+        기버
+      </Link>
+      <Link
+        href="/searchtaker"
+        aria-current="page"
+        className="flex h-8 w-[72px] items-center justify-center rounded-r-full bg-[#333] pl-[10px] pr-[18px] text-[12px] leading-[18px] font-medium text-[#f0f0f0]"
+      >
+        테이커
+      </Link>
+    </div>
+  );
+}
+
+function MiniTag({ children }: { children: string }) {
+  return (
+    <span className="rounded-full bg-[#333] px-3 py-1 text-[11px] leading-[14px] font-medium whitespace-nowrap text-[#f0f0f0]">
+      {children}
+    </span>
   );
 }
 
@@ -71,18 +211,10 @@ function Rating({ stars = 5, rating }: { stars?: number; rating: string }) {
           <StarIcon key={index} />
         ))}
       </div>
-      <span className="text-[11px] leading-[14px] font-medium whitespace-nowrap text-[#1e1e1e]">
+      <span className="text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
         {rating}
       </span>
     </div>
-  );
-}
-
-function Tag({ children }: { children: string }) {
-  return (
-    <span className="rounded-full bg-[#333] px-3 py-1 text-[11px] leading-[14px] font-medium whitespace-nowrap text-[#f0f0f0]">
-      {children}
-    </span>
   );
 }
 
@@ -98,21 +230,19 @@ function GiverProfileCard({
   description?: string[];
 }) {
   return (
-    <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 py-[18px] shadow-[0_0_8px_rgba(0,0,0,0.25)]">
+    <article className="h-[131px] rounded-2xl bg-[#f0f0f0] px-4 pt-[19px] pb-4 shadow-[0_0_8px_rgba(0,0,0,0.25)]">
       <div className="flex items-start gap-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#ccc] p-2">
-          <ProfileIcon />
+          <ProfileIcon className="size-6" />
         </div>
-
-        <div className="min-w-0 flex-1 pt-0.5">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
             <h2 className="text-[14px] leading-5 font-bold whitespace-nowrap text-[#1e1e1e]">
               {name}
             </h2>
             <Rating stars={stars} rating={rating} />
           </div>
-
-          <p className="mt-[5px] text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
+          <p className="mt-[6px] text-[11px] leading-[14px] font-medium text-[#1e1e1e]">
             {description.map((line) => (
               <span key={line} className="block">
                 {line}
@@ -121,13 +251,54 @@ function GiverProfileCard({
           </p>
         </div>
       </div>
-
-      <div className="mt-[18px] flex items-center gap-2">
-        <Tag>#중규모</Tag>
-        <Tag>#장기간</Tag>
-        <Tag>#오프라인</Tag>
+      <div className="mt-4 flex items-center gap-2">
+        <MiniTag>#중규모</MiniTag>
+        <MiniTag>#장기간</MiniTag>
+        <MiniTag>#오프라인</MiniTag>
       </div>
     </article>
+  );
+}
+
+function Pagination() {
+  const pages = Array.from({ length: 10 }, (_, index) => index + 1);
+
+  return (
+    <nav className="mt-[102px] flex justify-center" aria-label="페이지">
+      <div className="flex items-center justify-center">
+        {["<<", "<"].map((label) => (
+          <button
+            key={label}
+            type="button"
+            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
+          >
+            {label}
+          </button>
+        ))}
+        {pages.map((page) => (
+          <button
+            key={page}
+            type="button"
+            className={`flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] ${
+              page === 1
+                ? "font-bold text-[#1e1e1e]"
+                : "font-normal text-[#525252]"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+        {[">", ">>"].map((label) => (
+          <button
+            key={label}
+            type="button"
+            className="flex size-12 items-center justify-center rounded-lg text-[14px] leading-[22px] text-[#525252]"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </nav>
   );
 }
 
@@ -137,83 +308,27 @@ export default function SearchTakerPage() {
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
       data-node-id="45:394"
     >
-      <section className="mx-auto min-h-screen w-full max-w-[1280px] bg-[#f0f0f0]">
-        <header className="sticky top-0 z-10 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
-          <nav className="mx-auto flex items-center gap-10">
-            {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className={`text-[16px] leading-[24px] ${
-                  item.active ? "font-bold" : "font-medium"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="absolute right-[45px] flex items-center gap-4">
-            <button
-              type="button"
-              className="flex size-9 items-center justify-center"
-              aria-label="마이페이지"
-            >
-              <Image
-                src="/figma/my-icon.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
-            </button>
-            <Link
-              href="/login"
-              className="flex size-9 items-center justify-center"
-              aria-label="로그아웃"
-            >
-              <Image
-                src="/figma/logout-icon.svg"
-                alt=""
-                width={24}
-                height={24}
-                className="size-6"
-              />
-            </Link>
-          </div>
-        </header>
-
-        <div className="px-5 pt-12 pb-16 md:px-20">
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <h1 className="text-[24px] leading-[34px] font-extrabold text-[#1e1e1e]">
+      <section className="mx-auto min-h-[1008px] w-full max-w-[1280px] bg-[#f0f0f0]">
+        <Header />
+        <div className="px-20 pt-12 pb-16">
+          <div className="flex items-start justify-between">
+            <h1 className="text-[24px] leading-[34px] font-extrabold">
               나의 커뮤니티 운영에 도움이 될 만한 기버들이에요
             </h1>
-
-            <div
-              className="flex h-8 w-fit overflow-hidden rounded-full"
-              aria-label="탐색 대상 선택"
-            >
-              <Link
-                href="/Search_giver"
-                className="flex h-8 w-[72px] items-center justify-center rounded-l-full border border-[#333] bg-[#f0f0f0] pl-[18px] pr-[10px] text-center text-[12px] leading-[18px] font-medium whitespace-nowrap text-[#333]"
-              >
-                기버
-              </Link>
-              <Link
-                href="/searchtaker"
-                aria-current="page"
-                className="flex h-8 w-[72px] items-center justify-center rounded-r-full bg-[#333] pl-[10px] pr-[18px] text-center text-[12px] leading-[18px] font-medium whitespace-nowrap text-[#f0f0f0]"
-              >
-                테이커
-              </Link>
+            <div className="pt-[13px]">
+              <ModeSwitch />
             </div>
           </div>
 
-          <div className="mt-[44px] grid grid-cols-1 gap-x-5 gap-y-[39px] sm:grid-cols-2 lg:grid-cols-4">
+          <SearchControls />
+
+          <div className="mt-12 grid grid-cols-4 gap-x-5 gap-y-10">
             {giverProfiles.map((profile) => (
               <GiverProfileCard key={profile.name} {...profile} />
             ))}
           </div>
+
+          <Pagination />
         </div>
       </section>
     </main>

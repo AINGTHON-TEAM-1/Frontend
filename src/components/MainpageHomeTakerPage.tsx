@@ -7,37 +7,22 @@ const menuItems = [
   { label: "마이페이지", href: "#" },
 ];
 
-const backgroundCards = [
-  "/figma/search-giver/card-1.png",
-  "/figma/search-giver/card-2.png",
-  "/figma/search-giver/card-3.png",
-  "/figma/search-giver/card-4.png",
-  "/figma/search-giver/card-7.png",
-  "/figma/search-giver/card-8.png",
-];
-
 function HomeBackground() {
   return (
     <>
       <div
-        className="absolute inset-0 grid grid-cols-4 gap-6 overflow-hidden p-8 opacity-20 blur-[2px]"
+        className="absolute top-1/2 left-1/2 h-[808px] w-[1288px] -translate-x-1/2 -translate-y-1/2 blur-[2px]"
         data-node-id="71:478"
         aria-hidden="true"
       >
-        {Array.from({ length: 24 }, (_, index) => (
-          <div
-            key={index}
-            className="relative h-[104px] overflow-hidden rounded-2xl bg-[#f0f0f0] shadow-[0_0_8px_rgba(0,0,0,0.18)]"
-          >
-            <Image
-              src={backgroundCards[index % backgroundCards.length]}
-              alt=""
-              fill
-              sizes="280px"
-              className="object-cover"
-            />
-          </div>
-        ))}
+        <Image
+          src="/figma/home-background.png"
+          alt=""
+          fill
+          sizes="1288px"
+          className="object-cover opacity-20"
+          priority
+        />
       </div>
       <div
         className="absolute inset-0 bg-gradient-to-b from-[rgba(190,190,190,0.3)] to-[rgba(30,30,30,0.3)]"
