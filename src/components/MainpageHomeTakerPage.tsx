@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const menuItems = [
-  { label: "홈", href: "/mainpage_home_giver", active: true },
-  { label: "탐색", href: "/Search_giver" },
+  { label: "홈", href: "/mainpage_home_taker", active: true },
+  { label: "탐색", href: "/searchtaker" },
   { label: "마이페이지", href: "#" },
 ];
 
@@ -16,12 +16,12 @@ const backgroundCards = [
   "/figma/search-giver/card-8.png",
 ];
 
-function HomeBackground({ nodeId }: { nodeId: string }) {
+function HomeBackground() {
   return (
     <>
       <div
         className="absolute inset-0 grid grid-cols-4 gap-6 overflow-hidden p-8 opacity-20 blur-[2px]"
-        data-node-id="71:465"
+        data-node-id="71:478"
         aria-hidden="true"
       >
         {Array.from({ length: 24 }, (_, index) => (
@@ -41,21 +41,21 @@ function HomeBackground({ nodeId }: { nodeId: string }) {
       </div>
       <div
         className="absolute inset-0 bg-gradient-to-b from-[rgba(190,190,190,0.3)] to-[rgba(30,30,30,0.3)]"
-        data-node-id={nodeId}
+        data-node-id="71:479"
         aria-hidden="true"
       />
     </>
   );
 }
 
-export default function MainpageHomeGiverPage() {
+export default function MainpageHomeTakerPage() {
   return (
     <main
       className="min-h-screen bg-[#f0f0f0] font-sans text-[#1e1e1e] shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
-      data-node-id="71:467"
+      data-node-id="71:477"
     >
       <section className="relative mx-auto min-h-screen w-full max-w-[1280px] overflow-hidden bg-[#f0f0f0]">
-        <HomeBackground nodeId="71:467" />
+        <HomeBackground />
 
         <header className="relative z-10 flex h-20 items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
           <nav className="mx-auto flex items-center gap-10">
@@ -104,18 +104,18 @@ export default function MainpageHomeGiverPage() {
 
         <div className="relative z-[1] flex min-h-[720px] flex-col items-center px-5 pt-[177px] text-center">
           <h1 className="text-[48px] leading-[64px] font-extrabold tracking-normal">
-            나의 경험과 노하우로
+            커뮤니티 운영과 관리가 어렵다면
             <br />
-            커뮤니티를 도와주세요
+            기버와 함께하세요
           </h1>
           <p className="mt-6 text-[24px] leading-[34px] font-extrabold">
-            기버 정보를 업로드하고 도움이 필요한 커뮤니티를 만나보세요!
+            커뮤니티 정보를 업로드하고 그룹 성격에 맞는 기버를 찾아보세요!
           </p>
           <Link
             href="#"
             className="mt-[86px] flex h-16 w-full max-w-[550px] items-center justify-center rounded-full bg-[#1e1e1e] px-4 text-center text-[20px] leading-[30px] font-bold text-[#f0f0f0]"
           >
-            기버 정보 업로드하기
+            내 커뮤니티 정보 업로드하기
           </Link>
         </div>
       </section>

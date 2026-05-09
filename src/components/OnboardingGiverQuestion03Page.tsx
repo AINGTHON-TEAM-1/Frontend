@@ -138,7 +138,7 @@ export default function OnboardingGiverQuestion03Page() {
           </div>
 
           <Link
-            href={continueEnabled ? "/onboarding_giver_question_f" : "#"}
+            href={continueEnabled ? "/onboardinggiverquestionfinish" : "#"}
             aria-disabled={!continueEnabled}
             className={`mt-[74px] flex h-[52px] w-full items-center justify-center rounded-full px-12 py-[14px] text-center text-[16px] leading-[24px] font-bold text-[#f0f0f0] ${
               continueEnabled ? "bg-[#1e1e1e]" : "bg-[#b2b2b2]"
