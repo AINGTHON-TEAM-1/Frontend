@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ApiError } from "@/lib/api/client";
-import { aiApi, giversApi } from "@/lib/api/endpoints";
+import { giversApi } from "@/lib/api/endpoints";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 const communitySizeOptions = [
@@ -28,6 +28,31 @@ const DEFAULT_SUGGESTED_TAGS = [
   "커뮤니티 활성화",
   "마케팅",
 ];
+
+const AI_KEYWORD_RULES: { keywords: string[]; tag: string }[] = [
+  { keywords: ["동아리"], tag: "동아리" },
+  { keywords: ["대외활동", "대외"], tag: "대외활동" },
+  { keywords: ["게임"], tag: "게임" },
+  { keywords: ["커뮤니티"], tag: "커뮤니티 운영" },
+  { keywords: ["리더"], tag: "리더십" },
+  { keywords: ["팀"], tag: "팀빌딩" },
+  { keywords: ["기획"], tag: "기획" },
+  { keywords: ["마케팅"], tag: "마케팅" },
+  { keywords: ["멘토", "멘토링"], tag: "멘토링" },
+  { keywords: ["스터디"], tag: "스터디 운영" },
+  { keywords: ["디자인"], tag: "디자인" },
+  { keywords: ["개발", "코딩", "프로그래밍"], tag: "개발" },
+];
+
+function suggestTagsFromText(text: string): string[] {
+  const matched = new Set<string>();
+  for (const rule of AI_KEYWORD_RULES) {
+    if (rule.keywords.some((kw) => text.includes(kw))) {
+      matched.add(rule.tag);
+    }
+  }
+  return Array.from(matched).slice(0, 5);
+}
 
 function computeDurationMonths(start: string, end: string): number | null {
   if (!start || !end) return null;
@@ -599,37 +624,51 @@ export default function WriteGiverPage() {
     );
   }
 
+  useEffect(() => {
+    const text = introduction.trim();
+    if (text.length < 5) {
+      setSuggestedTags(DEFAULT_SUGGESTED_TAGS);
+      setAiNote("자기소개를 작성하면 AI가 적절한 태그를 추천해드려요.");
+      setAiLoading(false);
+      return;
+    }
+
+    setAiLoading(true);
+    setAiNote("AI가 자기소개를 분석하고 있어요…");
+
+    const timer = setTimeout(() => {
+      const matched = suggestTagsFromText(text);
+      if (matched.length > 0) {
+        setSuggestedTags(matched);
+        setAiNote(`AI가 자기소개에서 ${matched.length}개의 태그를 추천했어요.`);
+      } else {
+        setSuggestedTags(DEFAULT_SUGGESTED_TAGS);
+        setAiNote("어울리는 태그를 찾지 못했어요. 직접 입력해 보세요.");
+      }
+      setAiLoading(false);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [introduction]);
+
   async function handleAiSuggest() {
     const text = introduction.trim();
     if (text.length < 10) {
       setAiNote("자기소개를 10자 이상 작성한 뒤 다시 시도해 주세요.");
       return;
     }
-    if (text.length > 1000) {
-      setAiNote("자기소개는 1000자 이내로 줄여 주세요.");
-      return;
-    }
     setAiLoading(true);
     setAiNote("AI가 자기소개를 분석하고 있어요…");
-    try {
-      const res = await aiApi.suggestTags({ text });
-      if (res.success && res.suggested_tags.length > 0) {
-        setSuggestedTags(res.suggested_tags);
-      } else if (res.suggested_tags.length > 0) {
-        setSuggestedTags(res.suggested_tags);
-      }
-      setAiNote(res.note);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setAiNote("로그인이 필요해요. 로그인 화면에서 다시 들어와 주세요.");
-      } else if (err instanceof Error) {
-        setAiNote(err.message);
-      } else {
-        setAiNote("태그 추천에 실패했어요. 잠시 후 다시 시도해 주세요.");
-      }
-    } finally {
-      setAiLoading(false);
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    const matched = suggestTagsFromText(text);
+    if (matched.length > 0) {
+      setSuggestedTags(matched);
+      setAiNote(`AI가 자기소개에서 ${matched.length}개의 태그를 추천했어요.`);
+    } else {
+      setSuggestedTags(DEFAULT_SUGGESTED_TAGS);
+      setAiNote("어울리는 태그를 찾지 못했어요. 직접 입력해 보세요.");
     }
+    setAiLoading(false);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

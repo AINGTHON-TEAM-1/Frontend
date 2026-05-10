@@ -6,10 +6,180 @@ import { useEffect, useState } from "react";
 import { MatchSuccessModal } from "@/components/MatchSuccessModal";
 import { SearchControls } from "@/components/SearchControls";
 import { SiteHeader } from "@/components/SiteHeader";
-import { discoverApi } from "@/lib/api/endpoints";
 import type { DiscoverGiverItem, Format } from "@/lib/api/types";
 
 const PAGE_SIZE = 12;
+
+const MOCK_GIVERS: DiscoverGiverItem[] = [
+  {
+    id: "mock-g-01",
+    nickname: "이서윤",
+    profile_image_url: null,
+    bio_short: "5년차 커뮤니티 매니저, 1만+ 멤버 운영 경험",
+    rating_avg: "4.9",
+    rating_count: 142,
+    match_count: 87,
+    tags: ["리더십", "커뮤니티 운영"],
+    categories: ["community"],
+    freechat_enabled: true,
+    coffeechat_price: 35000,
+    mealchat_price: 65000,
+  },
+  {
+    id: "mock-g-02",
+    nickname: "박지훈",
+    profile_image_url: null,
+    bio_short: "스타트업 3곳 창업, 동아리 멘토링 다수",
+    rating_avg: "4.8",
+    rating_count: 98,
+    match_count: 64,
+    tags: ["기획", "팀빌딩"],
+    categories: ["network"],
+    freechat_enabled: true,
+    coffeechat_price: 30000,
+    mealchat_price: 55000,
+  },
+  {
+    id: "mock-g-03",
+    nickname: "최유진",
+    profile_image_url: null,
+    bio_short: "게임 길드 운영 8년, 디스코드 서버 5천+ 관리",
+    rating_avg: "4.8",
+    rating_count: 81,
+    match_count: 52,
+    tags: ["게임", "디스코드"],
+    categories: ["league"],
+    freechat_enabled: true,
+    coffeechat_price: 28000,
+    mealchat_price: 50000,
+  },
+  {
+    id: "mock-g-04",
+    nickname: "정민호",
+    profile_image_url: null,
+    bio_short: "대학 동아리 회장 출신, 대외활동 10건+",
+    rating_avg: "4.7",
+    rating_count: 67,
+    match_count: 41,
+    tags: ["동아리", "대외활동"],
+    categories: ["circle"],
+    freechat_enabled: true,
+    coffeechat_price: 22000,
+    mealchat_price: 42000,
+  },
+  {
+    id: "mock-g-05",
+    nickname: "한소희",
+    profile_image_url: null,
+    bio_short: "마케팅 컨설턴트, SNS 그로스 전문",
+    rating_avg: "4.6",
+    rating_count: 54,
+    match_count: 33,
+    tags: ["마케팅", "그로스"],
+    categories: ["network"],
+    freechat_enabled: true,
+    coffeechat_price: 20000,
+    mealchat_price: 38000,
+  },
+  {
+    id: "mock-g-06",
+    nickname: "윤재현",
+    profile_image_url: null,
+    bio_short: "스터디 그룹 운영 노하우 공유합니다",
+    rating_avg: "4.5",
+    rating_count: 43,
+    match_count: 28,
+    tags: ["스터디 운영", "기획"],
+    categories: ["crew"],
+    freechat_enabled: true,
+    coffeechat_price: 17000,
+    mealchat_price: 32000,
+  },
+  {
+    id: "mock-g-07",
+    nickname: "강예린",
+    profile_image_url: null,
+    bio_short: "디자인 동아리 4년, 브랜딩 워크샵 진행 경험",
+    rating_avg: "4.4",
+    rating_count: 36,
+    match_count: 22,
+    tags: ["디자인", "브랜딩"],
+    categories: ["circle"],
+    freechat_enabled: true,
+    coffeechat_price: 15000,
+    mealchat_price: 28000,
+  },
+  {
+    id: "mock-g-08",
+    nickname: "조성훈",
+    profile_image_url: null,
+    bio_short: "개발 부트캠프 멘토, 사이드 프로젝트 다수",
+    rating_avg: "4.3",
+    rating_count: 29,
+    match_count: 18,
+    tags: ["개발", "멘토링"],
+    categories: ["network"],
+    freechat_enabled: true,
+    coffeechat_price: 13000,
+    mealchat_price: 25000,
+  },
+  {
+    id: "mock-g-09",
+    nickname: "임도윤",
+    profile_image_url: null,
+    bio_short: "운동 모임 운영, 러닝 크루 매니저 경험",
+    rating_avg: "4.2",
+    rating_count: 23,
+    match_count: 14,
+    tags: ["운동", "크루 운영"],
+    categories: ["crew"],
+    freechat_enabled: true,
+    coffeechat_price: 11000,
+    mealchat_price: 22000,
+  },
+  {
+    id: "mock-g-10",
+    nickname: "서지원",
+    profile_image_url: null,
+    bio_short: "신생 동아리 창단 도와드려요",
+    rating_avg: "4.1",
+    rating_count: 18,
+    match_count: 11,
+    tags: ["동아리", "신생 운영"],
+    categories: ["circle"],
+    freechat_enabled: true,
+    coffeechat_price: 9000,
+    mealchat_price: 18000,
+  },
+  {
+    id: "mock-g-11",
+    nickname: "오태민",
+    profile_image_url: null,
+    bio_short: "취미 모임 처음 만들어보시는 분 환영해요",
+    rating_avg: "4.0",
+    rating_count: 12,
+    match_count: 7,
+    tags: ["취미", "소모임"],
+    categories: ["party"],
+    freechat_enabled: true,
+    coffeechat_price: 7000,
+    mealchat_price: 15000,
+  },
+  {
+    id: "mock-g-12",
+    nickname: "김다은",
+    profile_image_url: null,
+    bio_short: "이제 막 기버 활동 시작했어요. 함께 성장해요!",
+    rating_avg: "3.9",
+    rating_count: 6,
+    match_count: 3,
+    tags: ["신규", "스터디 운영"],
+    categories: ["crew"],
+    freechat_enabled: true,
+    coffeechat_price: 5000,
+    mealchat_price: 12000,
+  },
+];
 
 function ProfileIcon({ className = "size-4" }: { className?: string }) {
   return (
@@ -130,11 +300,20 @@ function GiverProfileCard({
             </p>
           </div>
         </div>
-        <div className="mt-4 flex items-center gap-2">
-          {fallbackTags.length === 0 ? (
-            <MiniTag>매칭 {item.match_count}회</MiniTag>
-          ) : (
-            fallbackTags.map((tag) => <MiniTag key={tag}>#{tag}</MiniTag>)
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {fallbackTags.length === 0 ? (
+              <MiniTag>매칭 {item.match_count}회</MiniTag>
+            ) : (
+              fallbackTags
+                .slice(0, 2)
+                .map((tag) => <MiniTag key={tag}>#{tag}</MiniTag>)
+            )}
+          </div>
+          {item.coffeechat_price > 0 && (
+            <span className="shrink-0 rounded-full bg-[#1e1e1e] px-2.5 py-1 text-[11px] leading-[14px] font-bold whitespace-nowrap text-[#f0f0f0]">
+              ☕ ₩{item.coffeechat_price.toLocaleString()}
+            </span>
           )}
         </div>
       </article>
@@ -425,25 +604,15 @@ export default function SearchTakerPage() {
   const [successOpen, setSuccessOpen] = useState(false);
 
   useEffect(() => {
-    const controller = new AbortController();
-    discoverApi
-      .givers({ page, size: PAGE_SIZE, sort: "latest" }, controller.signal)
-      .then((data) => {
-        setItems(data.items);
-        setTotal(data.total);
-        setError(null);
-      })
-      .catch((err) => {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("기버 목록을 불러오지 못했습니다.");
-        }
-      })
-      .finally(() => setLoading(false));
-
-    return () => controller.abort();
+    setLoading(true);
+    const timer = setTimeout(() => {
+      const start = (page - 1) * PAGE_SIZE;
+      setItems(MOCK_GIVERS.slice(start, start + PAGE_SIZE));
+      setTotal(MOCK_GIVERS.length);
+      setError(null);
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [page]);
 
   function handlePageChange(next: number) {
