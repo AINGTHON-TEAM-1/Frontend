@@ -32,6 +32,21 @@ export function SiteHeader({ role, active }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-20 flex h-20 w-full items-center justify-between bg-[#f0f0f0] px-[45px] shadow-[0_0_4px_rgba(0,0,0,0.25)]">
+      <Link
+        href={links.home}
+        aria-label="Well:Com 홈으로"
+        className="absolute left-[45px] flex items-center transition-opacity hover:opacity-80"
+      >
+        <Image
+          src="/figma/well-com-logo.png"
+          alt="Well:Com"
+          width={200}
+          height={32}
+          priority
+          className="h-8 w-auto"
+        />
+      </Link>
+
       <nav className="mx-auto flex items-center gap-20">
         {items.map((item) => {
           const isActive = item.key === active;
